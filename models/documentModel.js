@@ -1,12 +1,23 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 // Document schema
 const DocumentSchema = new mongoose.Schema({
-    userID: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  researcher: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  supervisor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  researcher: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  supervisor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  },
+  selectedSupervisor: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }],
   file: { type: String, required: true },
   comments: [{ type: String }],
+  date: {type: Date, default: Date.now}
 });
 
-module.exports = mongoose.model('Document', DocumentSchema);
+module.exports = mongoose.model("Document", DocumentSchema);
