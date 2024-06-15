@@ -23,7 +23,8 @@ app.use(cors());
 
 
 // Routes
-app.use('/api/season', require('./routes/seasonRoute'))
+app.use('/api/season', require('./routes/seasonRoute'));
+app.use('/api/users', require('./routes/userRoutes'));
 
 
 
