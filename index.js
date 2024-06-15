@@ -7,7 +7,7 @@ const cors = require('cors');
 require('dotenv').config()
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 
 if (!process.env.JWT_PRIVATE_KEY) {
@@ -23,7 +23,7 @@ app.use(cors());
 
 
 // Routes
-
+app.use('/api/season', require('./routes/seasonRoute'))
 
 
 
