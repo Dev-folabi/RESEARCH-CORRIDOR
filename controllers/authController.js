@@ -40,7 +40,7 @@ exports.updateUser = async (req, res) => {
     const { name, email, role, prefix, gender, department, matric, phone, topic, season, supervisor } = req.body;
   try {
 
-    let existUser = await User.findOne(req.user._id);
+    let existUser = await User.findOne(req.user);
     if (!existUser) return res.status(400).json({ msg: 'User does not exist' });
 
     const updatedUser = await User.findOneAndUpdate(

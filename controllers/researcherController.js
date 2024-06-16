@@ -4,7 +4,20 @@ const User = require('../models/userModel');
 const sendEmail = require('../utils/notifier');
 const path = require('path');
 
+// Select lecturer
+exports.selectSupervisor = async (req, res) => {
+    try {
+        const { supervisorId } = req.body;
+        req.user.supervisorId = supervisorId;
+        await req.user.save();
+        res.status(200).send('Supervisor selected');
+    } catch (err) {
+        res.status(400).send(err.message);
+    }
+  };
 
+
+//   Upload Topic for validation
 exports.uploadTopic = async (req, res) => {
     try {
         const { supervisorIds } = req.body;
@@ -14,7 +27,7 @@ exports.uploadTopic = async (req, res) => {
             return res.status(400).send('You can select up to 10 supervisors');
         }
 
-        const topicValidation = new TopicValidation({ researcherId: req.user._id, document, supervisorIds });
+        const topicValidation = new TopicValidation({ researcherId: req.user, document, supervisorIds });
         await topicValidation.save();
 
         const supervisors = await User.find({ _id: { $in: supervisorIds } });
@@ -28,17 +41,19 @@ exports.uploadTopic = async (req, res) => {
     }
 };
 
-exports.selectSupervisor = async (req, res) => {
-  try {
-      const { supervisorId } = req.body;
-      req.user.supervisorId = supervisorId;
-      await req.user.save();
-      res.status(200).send('Supervisor selected');
-  } catch (err) {
-      res.status(400).send(err.message);
-  }
+// Get uploaded Topic
+exports.getTopics = async (req, res) => {
+    try {
+
+        const uploadedTopics = await TopicValidation.find(req.user)
+
+        res.status(201).json(uploadedTopics);
+    } catch (err) {
+        res.status(400).send(err.message);
+    }
 };
 
+// Upload Research Doccument
 exports.uploadResearch = async (req, res) => {
     try {
         const document = req.file.path;
