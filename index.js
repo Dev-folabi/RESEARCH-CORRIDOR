@@ -19,13 +19,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 
 // Routes
-app.use('/api/season', require('./routes/seasonRoute'));
-app.use('/api/users', require('./routes/userRoutes'));
-
+app.use('/api/auth', require('./routes/'));
+app.use('/api/researcher', require('./routes/researcherRoutes'));
 
 
 connectDB().then(() => {

@@ -1,57 +1,34 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
-// Define the User schema
-const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, required: true },
-  prefix: { type: String },
-  gender: { type: String },
-  department: { type: String, required: true },
-  matric: { type: String },
-  phone: { type: String },
-  topic: { type: String },
-  season: { type: mongoose.Schema.Types.ObjectId, ref: "Season" },
-  progress: { type: Number, default: 0 },
-  supervisor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  selectedSupervisors: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+const userSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, enum: ['supervisor', 'researcher'], required: true },
+    prefix: { type: String },
+    gender: { type: String },
+    department: { type: String },
+    matric: { type: String, unique: true },
+    phone: { type: String },
+    topic: { type: String },
+    season: { type: mongoose.Schema.Types.ObjectId, ref: 'Season'  },
+    supervisor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 });
 
-// Pre-save middleware to hash the password before saving the user
-UserSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
+userSchema.pre('save', async function(next) {
+    if (!this.isModified('password')) {
+        return next();
+    }
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-  }
-  next();
+    next();
 });
 
-// Generate JWT Token
-UserSchema.methods.generateAuthToken = function () {
-  const token = jwt.sign(
-    {
-      _id: this._id,
-      email: this.email,
-      role: this.role,
-    },
-    process.env.JWT_PRIVATE_KEY, 
-    { expiresIn: '1h' }
-  );
-  return token;
+userSchema.methods.matchPassword = async function(enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Match the password
-UserSchema.methods.matchPassword = async function (password) {
-  return await bcrypt.compare(password, this.password);
-};
+const User = mongoose.model('User', userSchema);
 
-
-UserSchema.statics.hashPassword = async function (password) {
-  const salt = await bcrypt.genSalt(10);
-  return await bcrypt.hash(password, salt);
-};
-
-module.exports = mongoose.model("User", UserSchema);
+module.exports = User;

@@ -1,15 +1,10 @@
 const mongoose = require('mongoose');
 
-const DocumentSchema = new mongoose.Schema({
+const TopicValidationSchema = new mongoose.Schema({
     researcherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    supervisorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     document: { type: String, required: true },
+    supervisorIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     comments: [{ supervisorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, comment: String }],
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
 });
 
-module.exports = mongoose.model('Document', DocumentSchema);
-
+module.exports = mongoose.model('TopicValidation', TopicValidationSchema);

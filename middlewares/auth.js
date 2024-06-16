@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/userModel")
 
 // Middleware for general authentication
-const auth = (req, res, next) => {
+const auth = async (req, res, next) => {
   
   const token = req.header("x-auth-token");
 
@@ -13,8 +14,12 @@ const auth = (req, res, next) => {
   try {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
-    req.user = decoded; 
-    next(); 
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+        throw new Error();
+    }
+    req.user = user;
+    next();
   } catch (err) {
     res.status(401).json({ msg: "Token is not valid" });
   }
