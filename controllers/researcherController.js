@@ -1,6 +1,6 @@
 const TopicValidation = require('../models/topicValidationModel');
 const Document = require('../models/documentModel');
-const User = require('../models/userModel');
+const User = require('../models/researcherModel');
 const sendEmail = require('../utils/notifier');
 const path = require('path');
 

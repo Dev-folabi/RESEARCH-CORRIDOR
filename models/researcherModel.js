@@ -1,22 +1,21 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema({
+const researcherSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ['supervisor', 'researcher'], required: true },
-    prefix: { type: String },
+    role: { type: String, default: 'researcher', required: true },
     gender: { type: String },
     department: { type: String },
     matric: { type: String, unique: true },
     phone: { type: String },
     topic: { type: String },
     season: { type: mongoose.Schema.Types.ObjectId, ref: 'Season'  },
-    supervisor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    supervisor: { type: mongoose.Schema.Types.ObjectId, ref: 'Supervisor' }
 });
 
-userSchema.pre('save', async function(next) {
+researcherSchema.pre('save', async function(next) {
     if (!this.isModified('password')) {
         return next();
     }
@@ -25,10 +24,10 @@ userSchema.pre('save', async function(next) {
     next();
 });
 
-userSchema.methods.matchPassword = async function(enteredPassword) {
+researcherSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-const User = mongoose.model('User', userSchema);
+const Researcher = mongoose.model('researcher', researcherSchema);
 
-module.exports = User;
+module.exports = Researcher;
