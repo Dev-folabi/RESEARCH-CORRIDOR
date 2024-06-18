@@ -28,6 +28,6 @@ researcherSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-const Researcher = mongoose.model('researcher', researcherSchema);
+const Researcher = mongoose.model('Researcher', researcherSchema);
 
 module.exports = Researcher;

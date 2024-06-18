@@ -25,6 +25,6 @@ supervisorSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-const Supervisor = mongoose.model('User', supervisorSchema);
+const Supervisor = mongoose.model('Supervisor', supervisorSchema);
 
 module.exports = Supervisor;
