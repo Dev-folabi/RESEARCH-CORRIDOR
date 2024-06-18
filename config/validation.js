@@ -1,23 +1,23 @@
 const Joi = require('joi');
 
 const supervisorSignupSchema = Joi.object({
-    name: Joi.string().min(3).max(30).required(),
+    name: Joi.string().min(3).required(),
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
     role: Joi.string().valid('supervisor').required(),
     prefix: Joi.string().optional(),
     gender: Joi.string().valid('male', 'female', 'other').required(),
-    department: Joi.string().min(2).max(50).required(),
+    department: Joi.string().min(2).required(),
     phone: Joi.string().pattern(/^[0-9]{10,15}$/).optional()
 });
 
 const researcherSignupSchema = Joi.object({
-    name: Joi.string().min(3).max(30).required(),
+    name: Joi.string().min(3).required(),
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
     role: Joi.string().valid('researcher').required(),
     gender: Joi.string().valid('male', 'female', 'other').required(),
-    department: Joi.string().min(2).max(50).required(),
+    department: Joi.string().min(2).required(),
     matric: Joi.string().min(5).max(20).required(),
     phone: Joi.string().pattern(/^[0-9]{10,15}$/).optional(),
     topic: Joi.string().optional(),
@@ -35,21 +35,21 @@ const researcherLoginSchema = Joi.object({
 });
 
 const updateSupervisorSchema = Joi.object({
-    name: Joi.string().min(3).max(30).optional(),
+    name: Joi.string().min(3).optional(),
     email: Joi.string().email().optional(),
     role: Joi.string().valid('supervisor').optional(),
     prefix: Joi.string().optional(),
     gender: Joi.string().valid('male', 'female', 'other').optional(),
-    department: Joi.string().min(2).max(50).optional(),
+    department: Joi.string().min(2).optional(),
     phone: Joi.string().pattern(/^[0-9]{10,15}$/).optional()
 });
 
 const updateResearcherSchema = Joi.object({
-    name: Joi.string().min(3).max(30).optional(),
+    name: Joi.string().min(3).optional(),
     email: Joi.string().email().optional(),
     role: Joi.string().valid('researcher').optional(),
     gender: Joi.string().valid('male', 'female', 'other').optional(),
-    department: Joi.string().min(2).max(50).optional(),
+    department: Joi.string().min(2).optional(),
     matric: Joi.string().min(5).max(20).optional(),
     phone: Joi.string().pattern(/^[0-9]{10,15}$/).optional(),
     topic: Joi.string().optional(),

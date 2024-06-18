@@ -2,6 +2,7 @@ const Researcher = require('../models/researcherModel');
 const Supervisor = require('../models/supervisorModel')
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const sendEmail = require('../config/email')
 const { 
   supervisorSignupSchema, 
   researcherSignupSchema, 
@@ -23,6 +24,7 @@ exports.supervisorSignup = async (req, res) => {
       await user.save();
 
       const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_PRIVATE_KEY, { expiresIn: '1d' });
+      sendEmail(email, 'Research Corridor', `A new Account created as Supervisor with the following credential: Email: ${email}, Password: ${password}.`)
       res.status(201).json({ token });
   } catch (err) {
       res.status(400).json({ msg: err.message });
@@ -42,6 +44,7 @@ exports.researcherSignup = async (req, res) => {
       await user.save();
 
       const token = jwt.sign({ id: user._id, role: user.role, season: user.season }, process.env.JWT_PRIVATE_KEY, { expiresIn: '1d' });
+      sendEmail(email, 'Research Corridor', `A new Account created as Researcher with the following credential: Email: ${email}, Password: ${password}.`)
       res.status(201).json({ token });
   } catch (err) {
       res.status(400).json({ msg: err.message });
