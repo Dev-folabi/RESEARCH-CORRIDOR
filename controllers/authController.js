@@ -10,7 +10,7 @@ const {
   researcherLoginSchema, 
   updateSupervisorSchema, 
   updateResearcherSchema 
-} = require('../config/validation');
+} = require('../utils/notifier');
 
 // Supervisor Signup
 exports.supervisorSignup = async (req, res) => {
