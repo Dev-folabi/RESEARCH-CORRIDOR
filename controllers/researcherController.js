@@ -117,3 +117,14 @@ exports.uploadResearch = async (req, res) => {
     }
 };
 
+// Get uploaded Research
+exports.getResearch = async (req, res) => {
+    try {
+        const uploadedResearch = await Document.find({ researcherId: req.user.id }).select('-researcherId').select('-supervisorId')
+
+        res.status(200).json(uploadedResearch);
+    } catch (err) {
+        console.error(err);  
+        res.status(500).json({ msg: 'Internal Server Error', error: err.message });
+    }
+};
