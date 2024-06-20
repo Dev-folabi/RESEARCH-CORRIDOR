@@ -51,13 +51,13 @@ exports.uploadTopic = async (req, res) => {
 
         const topicValidation = new TopicValidation({
             title,
-            researcherId: req.user._id,
+            researcherId: req.user.id,
             document,
             supervisorIds: supervisorIdArray
         });
         await topicValidation.save();
 
-        const researcher = await Researcher.findById(req.user._id);
+        const researcher = await Researcher.findById(req.user.id);
 
         const supervisors = await Supervisor.find({ _id: { $in: supervisorIdArray } });
         supervisors.forEach(supervisor => {
