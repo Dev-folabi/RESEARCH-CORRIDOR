@@ -11,7 +11,7 @@ const researcherSchema = new mongoose.Schema({
     matric: { type: String, unique: true },
     phone: { type: String },
     topic: { type: String },
-    season: { type: mongoose.Schema.Types.ObjectId, ref: 'Season'  },
+    season: { type: mongoose.Schema.Types.ObjectId, ref: 'Season' },
     supervisor: { type: mongoose.Schema.Types.ObjectId, ref: 'Supervisor' }
 });
 

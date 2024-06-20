@@ -21,7 +21,8 @@ const researcherSignupSchema = Joi.object({
     matric: Joi.string().min(5).max(20).required(),
     phone: Joi.string().pattern(/^[0-9]{10,15}$/).optional(),
     topic: Joi.string().optional(),
-    season: Joi.string().required()
+    season: Joi.string().required(),
+    supervisor: Joi.string().optional()
 });
 
 const loginSchema = Joi.object({
@@ -53,7 +54,8 @@ const updateResearcherSchema = Joi.object({
     matric: Joi.string().min(5).max(20).optional(),
     phone: Joi.string().pattern(/^[0-9]{10,15}$/).optional(),
     topic: Joi.string().optional(),
-    season: Joi.string().optional()
+    season: Joi.string().optional(),
+    supervisor: Joi.string().optional()
 });
 
 module.exports = {

@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/researcherModel");
+const Supervisor = require("../models/supervisorModel");
+const Researcher = require('../models/researcherModel');
 
 // Middleware for general authentication
 const auth = async (req, res, next) => {
@@ -12,14 +13,25 @@ const auth = async (req, res, next) => {
   try {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
-    const user = await User.findById(decoded.userId);
-    if (!user) {
-      throw new Error();
+    let user;
+
+    if (decoded.role === 'supervisor') {
+      user = await Supervisor.findById(decoded.id);
+    } else if (decoded.role === 'researcher') {
+      user = await Researcher.findById(decoded.id);
+    } else {
+      return res.status(400).json({ msg: "Invalid user role" });
     }
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
     req.user = user;
+    
     next();
   } catch (err) {
-    res.status(401).json({ msg: "Token is not valid" });
+    res.status(401).json({ msg: "Token is not valid", error: err.message});
   }
 };
 
@@ -34,12 +46,12 @@ const authorize = (role) => {
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
-      req.user = decoded;
 
-      if (req.user.role !== role) {
+      if (decoded.role !== role) {
         return res.status(403).json({ msg: "Access denied, role not authorized" });
       }
 
+      req.user = decoded;
       next();
     } catch (err) {
       res.status(401).json({ msg: "Token is not valid" });

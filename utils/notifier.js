@@ -1,5 +1,5 @@
 const transporter = require('../config/email');
-
+require('dotenv')
 const sendEmail = async (to, subject, text) => {
     const mailOptions = {
         from: process.env.EMAIL_USER,

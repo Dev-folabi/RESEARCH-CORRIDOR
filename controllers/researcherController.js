@@ -1,95 +1,119 @@
-// const TopicValidation = require('../models/topicValidationModel');
-// const Document = require('../models/documentModel');
-// const User = require('../models/researcherModel');
-// const sendEmail = require('../utils/notifier');
-// const path = require('path');
+const mongoose = require('mongoose');
+const TopicValidation = require('../models/topicValidationModel');
+const Document = require('../models/documentModel');
+const Researcher = require('../models/researcherModel');
+const Supervisor = require('../models/supervisorModel');
+const sendEmail = require('../utils/notifier');
+const path = require('path');
 
-// // Select lecturer
-// exports.selectSupervisor = async (req, res) => {
-//     try {
-//         const { supervisorId } = req.body;
+// Select lecturer
+exports.selectSupervisor = async (req, res) => {
+    try {
+        const { supervisorId } = req.body;
 
-//         if (!supervisorId) {
-//             return res.status(400).send('Supervisor ID is required');
-//         }
+        if (!supervisorId) {
+            return res.status(400).send('Supervisor ID is required');
+        }
+        const supervisor = await Supervisor.findById(supervisorId);
+        if (!supervisor) {
+            return res.status(404).json({ msg: 'Supervisor not found' });
+        }
 
-//         req.user.supervisorId = supervisorId;
-//         await req.user.save();
-//         res.status(200).send('Supervisor selected');
-//     } catch (err) {
-//         res.status(500).send('Internal Server Error');
-//     }
-// };
+        const researcher = await Researcher.findById( req.user );
+        if (!researcher) {
+            return res.status(404).json({ msg: 'Researcher not found' });
+        }
+        researcher.supervisor = supervisorId;
+        await researcher.save();
+        res.status(200).send('Supervisor selected');
+    } catch (err) {
+        res.status(500).send('Internal Server Error');
+    }
+};
 
-// // Upload Topic for validation
-// exports.uploadTopic = async (req, res) => {
-//     try {
-//         const { supervisorIds } = req.body;
-//         const document = req.file.path;
+// Upload Topic for validation
 
-//         if (!supervisorIds || !document) {
-//             return res.status(400).send('Supervisor IDs and document are required');
-//         }
+exports.uploadTopic = async (req, res) => {
+    try {
+        const { title, supervisorIds } = req.body;
+        const document = req.file.path;
 
-//         if (supervisorIds.length > 10) {
-//             return res.status(400).send('You can select up to 10 supervisors');
-//         }
+        if (!supervisorIds || !document) {
+            return res.status(400).json({ msg: 'Supervisor IDs and document are required' });
+        }
 
-//         const topicValidation = new TopicValidation({
-//             researcherId: req.user._id,
-//             document,
-//             supervisorIds
-//         });
-//         await topicValidation.save();
+        // Ensure supervisorIds is an array of ObjectIds
+        const supervisorIdArray = JSON.parse(supervisorIds).map(id => new mongoose.Types.ObjectId(id));
 
-//         const supervisors = await User.find({ _id: { $in: supervisorIds } });
-//         supervisors.forEach(supervisor => {
-//             sendEmail(supervisor.email, 'New Topic Validation Request', `A new topic validation request has been submitted by ${req.user.name}.`);
-//         });
+        if (supervisorIdArray.length > 10) {
+            return res.status(400).json({ msg: 'You can only select up to 10 supervisors' });
+        }
 
-//         res.status(201).send('Topic validation request uploaded and supervisors notified');
-//     } catch (err) {
-//         res.status(500).send('Internal Server Error');
-//     }
-// };
+        const topicValidation = new TopicValidation({
+            title,
+            researcherId: req.user._id,
+            document,
+            supervisorIds: supervisorIdArray
+        });
+        await topicValidation.save();
 
-// // Get uploaded Topic
-// exports.getTopics = async (req, res) => {
-//     try {
-//         const uploadedTopics = await TopicValidation.find({ researcherId: req.user._id });
+        const researcher = await Researcher.findById(req.user._id);
 
-//         res.status(200).json(uploadedTopics);
-//     } catch (err) {
-//         res.status(500).send('Internal Server Error');
-//     }
-// };
+        const supervisors = await Supervisor.find({ _id: { $in: supervisorIdArray } });
+        supervisors.forEach(supervisor => {
+            sendEmail(supervisor.email, 'New Topic Validation Request', `A new topic validation request has been submitted by ${researcher.name}.`);
+        });
 
-// // Upload Research Document
-// exports.uploadResearch = async (req, res) => {
-//     try {
-//         const document = req.file.path;
+        res.status(201).json({ msg: 'Topic validation request uploaded and supervisors notified' });
+    } catch (err) {
+        console.error(err);  
+        res.status(500).json({ msg: 'Internal Server Error', error: err.message });
+    }
+};
 
-//         if (!document) {
-//             return res.status(400).send('Document is required');
-//         }
 
-//         if (!req.user.supervisorId) {
-//             return res.status(400).send('Select a supervisor first');
-//         }
 
-//         const doc = new Document({
-//             researcherId: req.user._id,
-//             supervisorId: req.user.supervisorId,
-//             document
-//         });
-//         await doc.save();
+// Get uploaded Topic
+exports.getTopics = async (req, res) => {
+    try {
+        const uploadedTopics = await TopicValidation.find({ researcherId: req.user }).populate('supervisorIds', 'name email');
 
-//         const supervisor = await User.findById(req.user.supervisorId);
-//         sendEmail(supervisor.email, 'New Research Document Uploaded', `A new research document has been uploaded by ${req.user.name}.`);
+        res.status(200).json(uploadedTopics);
+    } catch (err) {
+        res.status(500).send('Internal Server Error');
+    }
+};
 
-//         res.status(201).send('Research document uploaded and supervisor notified');
-//     } catch (err) {
-//         res.status(500).send('Internal Server Error');
-//     }
-// };
+// Upload Research Document
+exports.uploadResearch = async (req, res) => {
+    try {
+        const document = req.file.path;
+        const {title} = req.body
+
+        if (!document) {
+            return res.status(400).send('Document is required');
+        }
+        const researcher = await Researcher.findById(req.user.id);
+        const supervisorId = researcher.supervisor
+        if (!supervisorId) {
+            return res.status(400).send('Select a supervisor first');
+        }
+
+        const doc = new Document({
+            researcherId: req.user.id,
+            supervisorId: supervisorId,
+            title,
+            document
+        });
+        await doc.save();
+
+        const supervisor = await Researcher.findById(req.user.id);
+        sendEmail(supervisor.email, 'New Research Document Uploaded', `A new research document has been uploaded by ${req.user.name}.`);
+
+        res.status(201).send('Research document uploaded and supervisor notified');
+    } catch (err) {
+        console.error(err);  
+        res.status(500).json({ msg: 'Internal Server Error', error: err.message });
+    }
+};
 
