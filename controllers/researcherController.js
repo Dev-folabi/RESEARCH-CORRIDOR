@@ -4,7 +4,8 @@ const Document = require('../models/documentModel');
 const Researcher = require('../models/researcherModel');
 const Supervisor = require('../models/supervisorModel');
 const sendEmail = require('../utils/notifier');
-const path = require('path');
+const { createNotification } = require('./notificationController');
+
 
 // Select lecturer
 exports.selectSupervisor = async (req, res) => {
@@ -60,7 +61,18 @@ exports.uploadTopic = async (req, res) => {
         const researcher = await Researcher.findById(req.user.id);
 
         const supervisors = await Supervisor.find({ _id: { $in: supervisorIdArray } });
+        
         supervisors.forEach(supervisor => {
+            // System Notification
+            const notificationData = {
+                receiverId: supervisor._id,
+                receiverType: supervisor.role,
+                message: `A new topic validation request has been submitted by ${researcher.name} with matric no: ${researcher.matric}.`
+            };
+
+            createNotification(notificationData)
+
+            // Email Notification
             sendEmail(supervisor.email, 'New Topic Validation Request', `A new topic validation request has been submitted by ${researcher.name}.`);
         });
 
@@ -107,8 +119,19 @@ exports.uploadResearch = async (req, res) => {
         });
         await doc.save();
 
-        const supervisor = await Researcher.findById(req.user.id);
-        sendEmail(supervisor.email, 'New Research Document Uploaded', `A new research document has been uploaded by ${req.user.name}.`);
+        const supervisor = await Supervisor.findById(supervisorId)
+
+        // System Notification
+        const notificationData = {
+            receiverId: supervisor._id,
+            receiverType: supervisor.role,
+            message: `A new research document has been uploaded by ${researcher.name} with matric no: ${researcher.matric}.`
+        };
+
+        createNotification(notificationData)
+
+        // Email Notification
+        sendEmail(supervisor.email, 'New Research Document Uploaded', `A new research document has been uploaded by ${researcher.name} with matric no: ${researcher.matric}.`);
 
         res.status(201).send('Research document uploaded and supervisor notified');
     } catch (err) {
