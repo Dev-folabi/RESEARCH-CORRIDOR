@@ -1,14 +1,15 @@
 const Notification = require('../models/notificationModel');
 
 // Create Notification
-const createNotification = async (data, next) => {
+const createNotification = async (data) => {
     try {
         const newNotification = new Notification(data);
         await newNotification.save();
-        if (next) next();
+        // if (next) next();
     } catch (err) {
-        if (next) next(err);
-        else console.error('Error creating notification:', err);
+        // if (next) next(err);
+        // else 
+        console.error('Error creating notification:', err);
     }
 };
 
