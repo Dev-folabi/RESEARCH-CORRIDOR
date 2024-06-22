@@ -3,6 +3,7 @@ const TopicValidation = require('../models/topicValidationModel');
 const Document = require('../models/documentModel');
 const Researcher = require('../models/researcherModel');
 const Supervisor = require('../models/supervisorModel');
+const Appointment = require('../models/appointmentModel')
 const sendEmail = require('../utils/notifier');
 const { createNotification } = require('./notificationController');
 
@@ -28,7 +29,7 @@ exports.selectSupervisor = async (req, res) => {
         await researcher.save();
         res.status(200).send('Supervisor selected');
     } catch (err) {
-        res.status(500).send('Internal Server Error');
+        res.status(500).json({msg: 'Internal Server Error', error: err.message})
     }
 };
 
@@ -151,3 +152,17 @@ exports.getResearch = async (req, res) => {
         res.status(500).json({ msg: 'Internal Server Error', error: err.message });
     }
 };
+
+// Get Appointment
+exports.getAppointment = async (req, res) =>{
+
+    try{
+        const receiverId = await Appointment.find({ researcherId: req.user.id })
+        res.status(200).json(receiverId);
+    }catch (err){
+        console.error(err);  
+        res.status(500).json({ msg: 'Internal Server Error', error: err.message });
+    }
+};
+
+
