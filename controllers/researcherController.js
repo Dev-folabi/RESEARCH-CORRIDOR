@@ -3,7 +3,8 @@ const TopicValidation = require('../models/topicValidationModel');
 const Document = require('../models/documentModel');
 const Researcher = require('../models/researcherModel');
 const Supervisor = require('../models/supervisorModel');
-const Appointment = require('../models/appointmentModel')
+const Appointment = require('../models/appointmentModel');
+const Progress = require("../models/progressModel");
 const sendEmail = require('../utils/notifier');
 const { createNotification } = require('./notificationController');
 
@@ -21,12 +22,18 @@ exports.selectSupervisor = async (req, res) => {
             return res.status(404).json({ msg: 'Supervisor not found' });
         }
 
-        const researcher = await Researcher.findById( req.user );
+        const researcher = await Researcher.findById( req.user._id );
         if (!researcher) {
             return res.status(404).json({ msg: 'Researcher not found' });
         }
         researcher.supervisor = supervisorId;
         await researcher.save();
+
+        // Update Supervisor on Progress Percentage Sheet
+const progress = await Progress.findById(req.user._id)
+progress.supervisorId = supervisorId;
+await progress.save()
+
         res.status(200).send('Supervisor selected');
     } catch (err) {
         res.status(500).json({msg: 'Internal Server Error', error: err.message})
@@ -59,7 +66,7 @@ exports.uploadTopic = async (req, res) => {
         });
         await topicValidation.save();
 
-        const researcher = await Researcher.findById(req.user.id);
+        const researcher = await Researcher.findById(req.user._id);
 
         const supervisors = await Supervisor.find({ _id: { $in: supervisorIdArray } });
         
@@ -89,7 +96,7 @@ exports.uploadTopic = async (req, res) => {
 // Get uploaded Topic
 exports.getTopics = async (req, res) => {
     try {
-        const uploadedTopics = await TopicValidation.find({ researcherId: req.user }).populate('supervisorIds', 'name email');
+        const uploadedTopics = await TopicValidation.find({ researcherId: req.user_id }).populate('supervisorIds', 'name email');
 
         res.status(200).json(uploadedTopics);
     } catch (err) {
@@ -106,14 +113,14 @@ exports.uploadResearch = async (req, res) => {
         if (!document) {
             return res.status(400).send('Document is required');
         }
-        const researcher = await Researcher.findById(req.user.id);
+        const researcher = await Researcher.findById(req.user._id);
         const supervisorId = researcher.supervisor
         if (!supervisorId) {
             return res.status(400).send('Select a supervisor first');
         }
 
         const doc = new Document({
-            researcherId: req.user.id,
+            researcherId: req.user._id,
             supervisorId: supervisorId,
             title,
             document
@@ -144,7 +151,7 @@ exports.uploadResearch = async (req, res) => {
 // Get uploaded Research
 exports.getResearch = async (req, res) => {
     try {
-        const uploadedResearch = await Document.find({ researcherId: req.user.id }).select('-researcherId').select('-supervisorId')
+        const uploadedResearch = await Document.find({ researcherId: req.user._id }).select('-researcherId').select('-supervisorId')
 
         res.status(200).json(uploadedResearch);
     } catch (err) {
@@ -157,8 +164,8 @@ exports.getResearch = async (req, res) => {
 exports.getAppointment = async (req, res) =>{
 
     try{
-        const receiverId = await Appointment.find({ researcherId: req.user.id })
-        res.status(200).json(receiverId);
+        const appointment = await Appointment.find({ researcherId: req.user._id })
+        res.status(200).json(appointment);
     }catch (err){
         console.error(err);  
         res.status(500).json({ msg: 'Internal Server Error', error: err.message });
@@ -166,3 +173,14 @@ exports.getAppointment = async (req, res) =>{
 };
 
 
+// Get Progress Percentage
+exports.getProgress = async (req, res) =>{
+
+    try{
+        const progress = await Progress.find({ researcherId: req.user._id }).select('progressPercent')
+        res.status(200).json(progress);
+    } catch (err){
+        console.error(err);  
+        res.status(500).json({ msg: 'Internal Server Error', error: err.message });
+    }
+}
