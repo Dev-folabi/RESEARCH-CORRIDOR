@@ -15,8 +15,8 @@ const createSeason = async (req, res) => {
 
 const getSeason = async (req, res) => {
     try {
-        const season = await Season.findOne({ season: req.body.season });
-        if (!season) return res.status(404).json({ msg: 'Season not found' });
+        const season = await Season.find();
+        if (!season) return res.status(404).json({ msg: 'No Season found' });
 
         res.status(200).json(season);
     } catch (err) {
