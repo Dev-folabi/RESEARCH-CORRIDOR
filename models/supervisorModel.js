@@ -5,7 +5,7 @@ const supervisorSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, default: 'supervisor', required: true },
+    role: { type: String, default: 'Supervisor', required: true },
     prefix: { type: String, require: true },
     gender: { type: String },
     department: { type: String },

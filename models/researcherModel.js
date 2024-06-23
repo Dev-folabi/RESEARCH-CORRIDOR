@@ -5,7 +5,7 @@ const researcherSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, default: 'researcher', required: true },
+    role: { type: String, default: 'Researcher', required: true },
     gender: { type: String },
     department: { type: String },
     matric: { type: String, unique: true },
