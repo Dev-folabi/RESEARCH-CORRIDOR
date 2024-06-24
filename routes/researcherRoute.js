@@ -1,5 +1,5 @@
 const express = require('express');
-const { uploadTopic, selectSupervisor, uploadResearch, getTopics, getResearch, getProgress } = require('../controllers/researcherController');
+const { uploadTopic, selectSupervisor, uploadResearch, getTopics, getResearch, getProgress, profile } = require('../controllers/researcherController');
 const { auth, authorize } = require('../middlewares/auth')
 const upload = require('../middlewares/uploadValidateDocument')
 const docUpload = require('../middlewares/uploadResearchDocument');
@@ -20,6 +20,9 @@ router.post('/upload-research', auth, authorize('researcher'), researchDirectory
 router.get('/get-research', auth, authorize('researcher'), getResearch);
 
 // Get Progress Percentage
-router.get('/', getProgress)
+router.get('/progress', auth, getProgress)
+
+// Get Profile
+router.get('/', auth, profile)
 
 module.exports = router;
