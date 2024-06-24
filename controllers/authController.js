@@ -2,6 +2,7 @@ const Researcher = require("../models/researcherModel");
 const Supervisor = require("../models/supervisorModel");
 const Season = require("../models/seasonModel");
 const Progress = require("../models/progressModel");
+const Department = require("../models/departmentModel")
 const jwt = require("jsonwebtoken");
 const _ = require("lodash");
 const sendEmail = require("../utils/notifier");
@@ -22,6 +23,9 @@ exports.supervisorSignup = async (req, res) => {
   const { name, email, password, role, prefix, gender, department, phone } =
     req.body;
 
+    const departmentId = await Department.findOne(department)
+    if(!department) return res.status(400).json(`${department} does not exist`)
+
   try {
     let user = await Supervisor.findOne({ email });
     if (user) return res.status(400).json("User alredy exist");
@@ -32,7 +36,7 @@ exports.supervisorSignup = async (req, res) => {
       role,
       prefix,
       gender,
-      department,
+      department: departmentId,
       phone,
     });
     await user.save();
@@ -63,6 +67,9 @@ exports.researcherSignup = async (req, res) => {
   const { error } = researcherSignupSchema.validate(req.body);
   if (error) return res.status(400).json({ msg: error.details[0].message });
 
+  const departmentId = await Department.findOne(department)
+  if(!department) return res.status(400).json(`${department} does not exist`)
+    
   const {
     name,
     email,
@@ -89,7 +96,7 @@ exports.researcherSignup = async (req, res) => {
       password,
       role,
       gender,
-      department,
+      department : departmentId,
       matric,
       phone,
       topic,
@@ -202,13 +209,16 @@ exports.updateSupervisor = async (req, res) => {
 
   const { name, email, role, prefix, gender, department, phone } = req.body;
 
+  const departmentId = await Department.findOne(department)
+    if(!department) return res.status(400).json(`${department} does not exist`)
+
   try {
     let existUser = await Supervisor.findById(req.user.id);
     if (!existUser) return res.status(400).json({ msg: "User does not exist" });
 
     const updatedUser = await Supervisor.findByIdAndUpdate(
       req.user.id,
-      { name, email, role, prefix, gender, department, phone },
+      { name, email, role, prefix, gender, department: departmentId, phone },
       { new: true }
     );
 
@@ -235,13 +245,16 @@ exports.updateResearcher = async (req, res) => {
     season,
   } = req.body;
 
+  const departmentId = await Department.findOne(department)
+    if(!department) return res.status(400).json(`${department} does not exist`)
+
   try {
     let existUser = await Researcher.findById(req.user.id);
     if (!existUser) return res.status(400).json({ msg: "User does not exist" });
 
     const updatedUser = await Researcher.findByIdAndUpdate(
       req.user.id,
-      { name, email, role, gender, department, matric, phone, topic, season },
+      { name, email, role, gender, department : departmentId, matric, phone, topic, season },
       { new: true }
     );
 
