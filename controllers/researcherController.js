@@ -184,3 +184,14 @@ exports.getProgress = async (req, res) =>{
         res.status(500).json({ msg: 'Internal Server Error', error: err.message });
     }
 }
+
+// Get Profile
+exports.profile = async (req, res) =>{
+    try{
+        const researcher = await Researcher.findById(req.user._id).select('-password')
+        res.status(200).json(researcher);
+    } catch (err){
+        console.error(err);  
+        res.status(500).json({ msg: 'Internal Server Error', error: err.message });
+    }
+}
