@@ -15,9 +15,9 @@ const auth = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
     let user;
 
-    if (decoded.role === 'supervisor') {
+    if (decoded.role === 'Supervisor') {
       user = await Supervisor.findById(decoded.id);
-    } else if (decoded.role === 'researcher') {
+    } else if (decoded.role === 'Researcher') {
       user = await Researcher.findById(decoded.id);
     } else {
       return res.status(400).json({ msg: "Invalid user role" });
