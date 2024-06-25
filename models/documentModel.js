@@ -19,6 +19,9 @@ const DocumentSchema = new mongoose.Schema({
     default: "Not Reviewed",
   },
   comments: [{ type: String }],
+  reviewedDate: {
+    type: Date,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

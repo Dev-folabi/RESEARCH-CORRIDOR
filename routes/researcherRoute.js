@@ -8,16 +8,16 @@ const { validationDirectory, researchDirectory } = require('../middlewares/docDi
 const router = express.Router();
 
 // Select Supervisor
-router.put('/select-supervisor', auth, authorize('researcher'), selectSupervisor);
+router.put('/select-supervisor', auth, authorize('Researcher'), selectSupervisor);
 
 // Topic Validation Docs Routes
-router.post('/upload-topic', auth, authorize('researcher'), validationDirectory, upload.single('document'), uploadTopic);
-router.get('/get-topics', authorize('researcher'), auth, getTopics);
+router.post('/upload-topic', auth, authorize('Researcher'), validationDirectory, upload.single('document'), uploadTopic);
+router.get('/get-topics', authorize('Researcher'), auth, getTopics);
 
 
 // Research Docs Routes
-router.post('/upload-research', auth, authorize('researcher'), researchDirectory, docUpload.single('document'), uploadResearch);
-router.get('/get-research', auth, authorize('researcher'), getResearch);
+router.post('/upload-research', auth, authorize('Researcher'), researchDirectory, docUpload.single('document'), uploadResearch);
+router.get('/get-research', auth, authorize('Researcher'), getResearch);
 
 // Get Progress Percentage
 router.get('/progress', auth, getProgress)
