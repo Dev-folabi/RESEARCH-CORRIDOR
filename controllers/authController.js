@@ -2,7 +2,7 @@ const Researcher = require("../models/researcherModel");
 const Supervisor = require("../models/supervisorModel");
 const Season = require("../models/seasonModel");
 const Progress = require("../models/progressModel");
-const Department = require("../models/departmentModel")
+const Department = require("../models/departmentModel");
 const jwt = require("jsonwebtoken");
 const _ = require("lodash");
 const sendEmail = require("../utils/notifier");
@@ -20,15 +20,15 @@ exports.supervisorSignup = async (req, res) => {
   const { error } = supervisorSignupSchema.validate(req.body);
   if (error) return res.status(400).json({ msg: error.details[0].message });
 
-  const { name, email, password, role, prefix, gender, department, phone } =
-    req.body;
-
-    const departmentId = await Department.findOne(department)
-    if(!department) return res.status(400).json(`${department} does not exist`)
+  const { name, email, password, role, prefix, gender, department, phone } = req.body;
 
   try {
+    const departmentId = await Department.findOne({ department });
+    if (!departmentId) return res.status(400).json({ msg: `${department} does not exist` });
+
     let user = await Supervisor.findOne({ email });
-    if (user) return res.status(400).json("User alredy exist");
+    if (user) return res.status(400).json({ msg: "User already exists" });
+
     user = new Supervisor({
       name,
       email,
@@ -36,29 +36,30 @@ exports.supervisorSignup = async (req, res) => {
       role,
       prefix,
       gender,
-      department: departmentId,
+      department: departmentId._id,
       phone,
     });
     await user.save();
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
-      process.env.JWT_PRIVATE_KEY
+      process.env.JWT_PRIVATE_KEY,
+      { expiresIn: "1d" }
     );
+
     sendEmail(
       email,
       "Research Corridor",
-      `A new Account created as Supervisor with the following credential: Email: ${email}, Password: ${password}.`
+      `A new account created as Supervisor with the following credentials: Email: ${email}, Password: ${password}.`
     );
-    res
-      .status(201)
-      .json({
-        msg: "User Sign up successfully",
-        token,
-        user: _.omit(user.toObject(), ["password"]),
-      });
+
+    res.status(201).json({
+      msg: "User signed up successfully",
+      token,
+      user: _.omit(user.toObject(), ["password"]),
+    });
   } catch (err) {
-    res.status(400).json({ msg: err.message });
+    res.status(500).json({ msg: "Internal Server Error", error: err.message });
   }
 };
 
@@ -67,36 +68,25 @@ exports.researcherSignup = async (req, res) => {
   const { error } = researcherSignupSchema.validate(req.body);
   if (error) return res.status(400).json({ msg: error.details[0].message });
 
-  const departmentId = await Department.findOne(department)
-  if(!department) return res.status(400).json(`${department} does not exist`)
-    
-  const {
-    name,
-    email,
-    password,
-    role,
-    gender,
-    department,
-    matric,
-    phone,
-    topic,
-    season,
-    supervisor,
-  } = req.body;
+  const { name, email, password, role, gender, department, matric, phone, topic, season, supervisor } = req.body;
 
   try {
+    const departmentId = await Department.findOne({ department });
+    if (!departmentId) return res.status(400).json({ msg: `${department} does not exist` });
+
     const seasonID = await Season.findOne({ season });
-    if (!seasonID) return res.status(400).json("Season not exist");
+    if (!seasonID) return res.status(400).json({ msg: "Season does not exist" });
 
     let user = await Researcher.findOne({ email });
-    if (user) return res.status(400).json("User alredy exist");
+    if (user) return res.status(400).json({ msg: "User already exists" });
+
     user = new Researcher({
       name,
       email,
       password,
       role,
       gender,
-      department : departmentId,
+      department: departmentId._id,
       matric,
       phone,
       topic,
@@ -106,7 +96,7 @@ exports.researcherSignup = async (req, res) => {
     await user.save();
 
     // Create Researcher Progress Percentage Sheet
-    const progress = await new Progress({
+    const progress = new Progress({
       supervisorId: supervisor,
       researcherId: user._id,
     });
@@ -121,18 +111,16 @@ exports.researcherSignup = async (req, res) => {
     sendEmail(
       email,
       "Research Corridor",
-      `A new Account created as Researcher with the following credential: Email: ${email}, Password: ${password}.`
+      `A new account created as Researcher with the following credentials: Email: ${email}, Password: ${password}.`
     );
 
-    res
-      .status(201)
-      .json({
-        msg: "User Sign up successfully",
-        token,
-        user: _.omit(user.toObject(), ["password"]),
-      });
+    res.status(201).json({
+      msg: "User signed up successfully",
+      token,
+      user: _.omit(user.toObject(), ["password"]),
+    });
   } catch (err) {
-    res.status(400).json({ msg: err.message });
+    res.status(500).json({ msg: "Internal Server Error", error: err.message });
   }
 };
 
@@ -155,20 +143,17 @@ exports.supervisorLogin = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res
-      .status(200)
-      .json({
-        msg: "User logged in successfully",
-        token,
-        user: _.omit(user.toObject(), ["password"]),
-      });
+    res.status(200).json({
+      msg: "User logged in successfully",
+      token,
+      user: _.omit(user.toObject(), ["password"]),
+    });
   } catch (err) {
-    res.status(400).json({ msg: err.message });
+    res.status(500).json({ msg: "Server error, please try again later." });
   }
 };
 
 // Researcher Login
-
 exports.researcherLogin = async (req, res) => {
   const { error } = researcherLoginSchema.validate(req.body);
   if (error) return res.status(400).json({ msg: error.details[0].message });
@@ -209,16 +194,16 @@ exports.updateSupervisor = async (req, res) => {
 
   const { name, email, role, prefix, gender, department, phone } = req.body;
 
-  const departmentId = await Department.findOne(department)
-    if(!department) return res.status(400).json(`${department} does not exist`)
-
   try {
-    let existUser = await Supervisor.findById(req.user.id);
+    const departmentId = await Department.findOne({ department });
+    if (!departmentId) return res.status(400).json({ msg: `${department} does not exist` });
+
+    const existUser = await Supervisor.findById(req.user.id);
     if (!existUser) return res.status(400).json({ msg: "User does not exist" });
 
     const updatedUser = await Supervisor.findByIdAndUpdate(
       req.user.id,
-      { name, email, role, prefix, gender, department: departmentId, phone },
+      { name, email, role, prefix, gender, department: departmentId._id, phone },
       { new: true }
     );
 
@@ -233,28 +218,18 @@ exports.updateResearcher = async (req, res) => {
   const { error } = updateResearcherSchema.validate(req.body);
   if (error) return res.status(400).json({ msg: error.details[0].message });
 
-  const {
-    name,
-    email,
-    role,
-    gender,
-    department,
-    matric,
-    phone,
-    topic,
-    season,
-  } = req.body;
-
-  const departmentId = await Department.findOne(department)
-    if(!department) return res.status(400).json(`${department} does not exist`)
+  const { name, email, role, gender, department, matric, phone, topic, season } = req.body;
 
   try {
-    let existUser = await Researcher.findById(req.user.id);
+    const departmentId = await Department.findOne({ department });
+    if (!departmentId) return res.status(400).json({ msg: `${department} does not exist` });
+
+    const existUser = await Researcher.findById(req.user.id);
     if (!existUser) return res.status(400).json({ msg: "User does not exist" });
 
     const updatedUser = await Researcher.findByIdAndUpdate(
       req.user.id,
-      { name, email, role, gender, department : departmentId, matric, phone, topic, season },
+      { name, email, role, gender, department: departmentId._id, matric, phone, topic, season },
       { new: true }
     );
 
