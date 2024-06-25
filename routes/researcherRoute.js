@@ -1,6 +1,6 @@
 const express = require('express');
 const { uploadTopic, selectSupervisor, uploadResearch, getTopics, getResearch, getProgress, profile } = require('../controllers/researcherController');
-const { auth, authorize } = require('../middlewares/auth')
+const { auth } = require('../middlewares/auth')
 const upload = require('../middlewares/uploadValidateDocument')
 const docUpload = require('../middlewares/uploadResearchDocument');
 const { validationDirectory, researchDirectory } = require('../middlewares/docDirMiddleware');

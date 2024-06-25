@@ -22,3 +22,25 @@ exports.getSupervisors = async (req, res) => {
         res.status(500).json({ msg: 'Internal Server Error', error: err.message });
     }
 };
+
+// Topic Vallidation Request
+
+// exports.validateTopic = async (req, res) =>{
+//     const {_id} = req.user
+
+    
+// }
+
+// Comment on Validation
+
+exports.commentOnDocument = async (req, res) => {
+    try {
+        const { documentId, comment } = req.body;
+        const document = await Document.findById(documentId);
+        document.comments.push({ supervisorId: req.user._id, comment });
+        await document.save();
+        res.status(200).send('Comment added');
+    } catch (err) {
+        res.status(400).send(err.message);
+    }
+};
