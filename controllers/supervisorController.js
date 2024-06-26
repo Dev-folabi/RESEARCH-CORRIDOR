@@ -6,6 +6,7 @@ const Supervisor = require("../models/supervisorModel");
 const Appointment = require("../models/appointmentModel");
 const sendEmail = require("../utils/notifier");
 const { createNotification } = require("./notificationController");
+const { findById } = require("../models/seasonModel");
 
 // Get Supervisors
 exports.getSupervisors = async (req, res) => {
@@ -74,6 +75,20 @@ exports.commentOnValidation = async (req, res) => {
     });
     await document.save();
 
+    const receiver = await Researcher.findById(document.researcherId)
+    // System Notification
+    const notificationData = {
+        receiverId: receiver._id,
+        receiverType: receiver.role,
+        message: `A new comment has been added to validation request you submitted.`
+    };
+
+    createNotification(notificationData)
+
+    // Email Notification
+    sendEmail(receiver.email, 'Validation Reviewed', `A new comment has been added to validation request you submitted.`);
+
+
     res.status(200).json({ msg: "Comment added" });
   } catch (err) {
     res.status(400).json({ msg: "Error adding comment", error: err.message });
@@ -128,6 +143,18 @@ exports.commentOnDocument = async (req, res) => {
 document.reviewedDate = Date.now()
       await document.save();
   
+      const receiver = await Researcher.findById(document.researcherId)
+    // System Notification
+    const notificationData = {
+        receiverId: receiver._id,
+        receiverType: receiver.role,
+        message: `A new comment has been added to your research document by your Supervisor.`
+    };
+
+    createNotification(notificationData)
+
+    // Email Notification
+    sendEmail(receiver.email, 'Research Document Reviewed', `A new comment has been added to your research document by your Supervisor.`);
       res.status(200).json({ msg: "Comment added" });
     } catch (err) {
       res.status(400).json({ msg: "Error adding comment", error: err.message });
