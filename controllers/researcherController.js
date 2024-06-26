@@ -96,7 +96,7 @@ exports.uploadTopic = async (req, res) => {
 // Get uploaded Topic
 exports.getTopics = async (req, res) => {
     try {
-        const uploadedTopics = await TopicValidation.find({ researcherId: req.user_id }).populate('supervisorIds', 'name email');
+        const uploadedTopics = await TopicValidation.find({ researcherId: req.user._id }).populate('supervisorIds', 'name email');
 
         res.status(200).json(uploadedTopics);
     } catch (err) {

@@ -1,46 +1,135 @@
-const mongoose = require('mongoose');
-const TopicValidation = require('../models/topicValidationModel');
-const Document = require('../models/documentModel');
-const Researcher = require('../models/researcherModel');
-const Supervisor = require('../models/supervisorModel');
-const Appointment = require('../models/appointmentModel')
-const sendEmail = require('../utils/notifier');
-const { createNotification } = require('./notificationController');
+const mongoose = require("mongoose");
+const TopicValidation = require("../models/topicValidationModel");
+const Document = require("../models/documentModel");
+const Researcher = require("../models/researcherModel");
+const Supervisor = require("../models/supervisorModel");
+const Appointment = require("../models/appointmentModel");
+const sendEmail = require("../utils/notifier");
+const { createNotification } = require("./notificationController");
 
+// Get Supervisors
 exports.getSupervisors = async (req, res) => {
-    const { department } = req.body;
+  const { department } = req.body;
 
-    try {
-        const supervisors = await Supervisor.find({ department }).select('name _id');
-        
-        if (supervisors.length === 0) {
-            return res.status(404).json({ msg: `No supervisors found in the ${department} department` });
-        }
+  try {
+    const supervisors = await Supervisor.find({ department }).select("name _id");
 
-        res.status(200).json(supervisors);
-    } catch (err) {
-        res.status(500).json({ msg: 'Internal Server Error', error: err.message });
+    if (supervisors.length === 0) {
+      return res.status(404).json({ msg: `No supervisors found in the ${department} department` });
     }
+
+    res.status(200).json(supervisors);
+  } catch (err) {
+    res.status(500).json({ msg: "Internal Server Error", error: err.message });
+  }
 };
 
-// Topic Vallidation Request
+// Get All Validation Requests
+exports.validationRequest = async (req, res) => {
+  try {
+    const validations = await TopicValidation.find({
+      supervisorIds: req.user._id,
+    }).populate("researcherId", "season");
 
-// exports.validateTopic = async (req, res) =>{
-//     const {_id} = req.user
+    if (validations.length === 0)
+      return res.status(200).json({ msg: "No Validation found" });
 
-    
-// }
+    const validateDocument = validations.filter(validate => 
+      validate.researcherId.season.equals(req.season._id)
+    );
+
+    res.status(200).json(validateDocument);
+  } catch (err) {
+    res.status(400).json({ msg: "Error fetching validations", error: err.message });
+  }
+};
+
+// Get A Validation Request
+exports.getRequest = async (req, res) => {
+
+    try {
+      const validation = await TopicValidation.findById(req.param).populate("researcherId", "matric name");
+  
+      if (!validation)
+        return res.status(200).json({ msg: "No Validation found" });
+  
+      res.status(200).json(validation);
+    } catch (err) {
+      res.status(400).json({ msg: "Error fetching validations", error: err.message });
+    }
+  };
 
 // Comment on Validation
+exports.commentOnValidation = async (req, res) => {
+  try {
+    const { id, comment } = req.body;
 
+    const document = await TopicValidation.findById(id);
+    if (!document) return res.status(404).json({ msg: "Validation not found" });
+
+    document.comments.push({
+      supervisorId: req.user._id,
+      comment,
+      status: "Reviewed",
+    });
+    await document.save();
+
+    res.status(200).json({ msg: "Comment added" });
+  } catch (err) {
+    res.status(400).json({ msg: "Error adding comment", error: err.message });
+  }
+};
+
+// Get All Documents
+exports.getAllDocument = async (req, res) => {
+  try {
+    const documents = await Document.find({
+      supervisorId: req.user._id,
+    }).populate("researcherId", "matric name");
+
+    if (documents.length === 0)
+      return res.status(200).json({ msg: "No Document found" });
+
+    const getDocument = documents.filter(document => 
+      document.researcherId.season.equals(req.season._id)
+    );
+
+    res.status(200).json(getDocument);
+  } catch (err) {
+    res.status(400).json({ msg: "Error fetching documents", error: err.message });
+  }
+}
+
+// Get A Document
+exports.getDocument = async (req, res) => {
+    try {
+      const document = await Document.findById(req.param).populate("researcherId", "season");
+  
+      if (!document)
+        return res.status(200).json({ msg: "No Document found" });
+  
+      res.status(200).json(documentocument);
+    } catch (err) {
+      res.status(400).json({ msg: "Error fetching documents", error: err.message });
+    }
+  }
+
+
+  // Comment on Research Document
 exports.commentOnDocument = async (req, res) => {
     try {
-        const { documentId, comment } = req.body;
-        const document = await Document.findById(documentId);
-        document.comments.push({ supervisorId: req.user._id, comment });
-        await document.save();
-        res.status(200).send('Comment added');
+      const { comment } = req.body;
+  
+      const document = await Document.findById(id);
+      if (!document) return res.status(404).json({ msg: "No Document found" });
+  
+      document.comments.push( comment );
+      document.status = "Reviewed";
+document.reviewedDate = Date.now()
+      await document.save();
+  
+      res.status(200).json({ msg: "Comment added" });
     } catch (err) {
-        res.status(400).send(err.message);
+      res.status(400).json({ msg: "Error adding comment", error: err.message });
     }
-};
+  };

@@ -11,17 +11,22 @@ const TopicValidationSchema = new mongoose.Schema({
   supervisorIds: [
     { type: mongoose.Schema.Types.ObjectId, ref: "Supervisor", require: true },
   ],
-  status: {
-    type: String,
-    enum: ["Reviewed", "Not Reviewed"],
-    default: "Not Reviewed",
-  },
+
   comments: [
     {
       supervisorId: { type: mongoose.Schema.Types.ObjectId, ref: "Supervisor" },
+
       comment: String,
+
+      status: {
+        type: String,
+        enum: ["Reviewed", "Not Reviewed"],
+        default: "Not Reviewed",
+      }
+
     },
   ],
+
   createdAt: { type: Date, default: Date.now },
 });
 
