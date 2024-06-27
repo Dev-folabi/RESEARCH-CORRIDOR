@@ -17,6 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use('/validatedocuments', express.static(path.join(__dirname, 'validateDocuments')));
+app.use('/researchdocuments', express.static(path.join(__dirname, 'researchDocuments')));
 
 // Routes
 app.use('/api/season', require('./routes/seasonRoute'));
