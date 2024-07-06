@@ -32,12 +32,15 @@ exports.validationRequest = async (req, res) => {
       supervisorIds: req.user._id,
     }).populate("researcherId", "season");
 
-    if (validations.length === 0)
+    if (!validations)
       return res.status(200).json({ msg: "No Validation found" });
 
     const validateDocument = validations.filter(validate => 
       validate.researcherId.season.equals(req.season._id)
     );
+
+    if (validateDocument.length === 0)
+      return res.status(200).json({ msg: "No Validation found" }); 
 
     res.status(200).json(validateDocument);
   } catch (err) {
@@ -76,6 +79,7 @@ exports.commentOnValidation = async (req, res) => {
     await document.save();
 
     const receiver = await Researcher.findById(document.researcherId)
+
     // System Notification
     const notificationData = {
         receiverId: receiver._id,
