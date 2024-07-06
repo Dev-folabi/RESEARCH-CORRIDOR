@@ -1,29 +1,45 @@
-const express = require('express')
-const {  validationRequest, getAllDocument, getSupervisors, commentOnValidation, getRequest, getDocument, commentOnDocument  } = require('../controllers/supervisorController')
+const express = require("express");
+const {
+  validationRequest,
+  getAllDocument,
+  getSupervisors,
+  commentOnValidation,
+  getRequest,
+  getDocument,
+  commentOnDocument,
+} = require("../controllers/supervisorController");
 const setSeason = require("../middlewares/seasonValidate");
-const { auth, authorize } = require('../middlewares/auth');
-const router = express.Router()
+const { auth, authorize } = require("../middlewares/auth");
 
-// Get Supervisors
-router.post('/', getSupervisors)
+const router = express.Router();
 
-// Get All Validation Request
-router.get("/validation-request", auth, setSeason, validationRequest);
+// Supervisor Routes
+router.post("/supervisors", getSupervisors);
 
-// Get  A Validation Request
-router.get("/validation-request/:id", auth, getRequest);
+// Validation Request Routes
+router.get("/validation-requests", auth, setSeason, validationRequest);
+router.get("/validation-requests/:id", auth, getRequest);
+router.put(
+  "/validation-requests/comment",
+  auth,
+  authorize("Supervisor"),
+  commentOnValidation
+);
 
-// Comment on Validation
-router.put("/comment-on-validation", auth, authorize('Supervisor'), commentOnValidation);
+// Document Routes
+router.get(
+  "/documents",
+  auth,
+  authorize("Supervisor"),
+  setSeason,
+  getAllDocument
+);
+router.get("/documents/:id", auth, getDocument);
+router.put(
+  "/documents/comment",
+  auth,
+  authorize("Supervisor"),
+  commentOnDocument
+);
 
-// Get All Reseachers documents
-router.get("/get-document", auth, authorize('Supervisor'), setSeason, getAllDocument);
-
-// Get  A Reseacher document
-router.get("/get-document/:id",auth,  getDocument);
-
-// Comment on Document
-router.put("/comment-on-document", auth, authorize('Supervisor'), commentOnDocument);
-
-
-module.exports = router
+module.exports = router;
