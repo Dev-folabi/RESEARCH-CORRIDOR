@@ -3,7 +3,7 @@ const Season = require("../models/seasonModel");
 const setSeason = async (req, res, next) => {
   
   try {
-    const { season } = req.header('season'); 
+    const season  = req.header('season'); 
     if (!season) {
       return res.status(400).json({ msg: "Pls, set Season" });
     }
