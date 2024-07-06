@@ -52,7 +52,7 @@ exports.validationRequest = async (req, res) => {
 exports.getRequest = async (req, res) => {
 
     try {
-      const validation = await TopicValidation.findById(req.param).populate("researcherId", "matric name");
+      const validation = await TopicValidation.findById(req.params.id).populate("researcherId", "matric name");
   
       if (!validation)
         return res.status(200).json({ msg: "No Validation found" });
