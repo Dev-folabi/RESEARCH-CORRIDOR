@@ -1,4 +1,3 @@
-const mongoose = require("mongoose");
 const TopicValidation = require("../models/topicValidationModel");
 const Document = require("../models/documentModel");
 const Researcher = require("../models/researcherModel");
@@ -6,7 +5,7 @@ const Supervisor = require("../models/supervisorModel");
 const Appointment = require("../models/appointmentModel");
 const sendEmail = require("../utils/notifier");
 const { createNotification } = require("./notificationController");
-const { findById } = require("../models/seasonModel");
+
 
 // Get Supervisors
 exports.getSupervisors = async (req, res) => {
@@ -66,9 +65,11 @@ exports.getRequest = async (req, res) => {
 // Comment on Validation
 exports.commentOnValidation = async (req, res) => {
   try {
-    const { id, comment } = req.body;
+    const { comment } = req.body;
+    if (!comment) return res.status(404).json({ msg: "Comment is required" });
+    
 
-    const document = await TopicValidation.findById(id);
+    const document = await TopicValidation.findById(req.params.id);
     if (!document) return res.status(404).json({ msg: "Validation not found" });
 
     document.comments.push({
@@ -103,8 +104,8 @@ exports.commentOnValidation = async (req, res) => {
 exports.getAllDocument = async (req, res) => {
   try {
     const documents = await Document.find({
-      supervisorId: req.user._id,
-    }).populate("researcherId", "matric name");
+      supervisorId: req.user.id,
+    }).populate("researcherId", "matric name season");
 
     if (documents.length === 0)
       return res.status(200).json({ msg: "No Document found" });
@@ -122,12 +123,12 @@ exports.getAllDocument = async (req, res) => {
 // Get A Document
 exports.getDocument = async (req, res) => {
     try {
-      const document = await Document.findById(req.param).populate("researcherId", "season");
+      const document = await Document.findById(req.params.id).populate("researcherId", "season");
   
       if (!document)
         return res.status(200).json({ msg: "No Document found" });
   
-      res.status(200).json(documentocument);
+      res.status(200).json(document);
     } catch (err) {
       res.status(400).json({ msg: "Error fetching documents", error: err.message });
     }
@@ -138,8 +139,9 @@ exports.getDocument = async (req, res) => {
 exports.commentOnDocument = async (req, res) => {
     try {
       const { comment } = req.body;
-  
-      const document = await Document.findById(id);
+      if (!comment) return res.status(404).json({ msg: "Comment is required" });
+      
+      const document = await Document.findById(req.params.id);
       if (!document) return res.status(404).json({ msg: "No Document found" });
   
       document.comments.push( comment );

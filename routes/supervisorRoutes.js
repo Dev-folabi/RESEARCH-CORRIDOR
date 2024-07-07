@@ -17,16 +17,24 @@ const router = express.Router();
 router.post("/supervisors", getSupervisors);
 
 // Validation Request Routes
+
+//  Get All Validation request
 router.get("/validation-requests", auth, setSeason, validationRequest);
+
+// Get A Validation request
 router.get("/validation-requests/:id", auth, getRequest);
+
+// Comment on a validation request
 router.put(
-  "/validation-requests/comment",
+  "/validation-requests/comment/:id",
   auth,
   authorize("Supervisor"),
   commentOnValidation
 );
 
 // Document Routes
+
+// Get All Documents
 router.get(
   "/documents",
   auth,
@@ -34,9 +42,13 @@ router.get(
   setSeason,
   getAllDocument
 );
+
+// Get A document
 router.get("/documents/:id", auth, getDocument);
+
+// Comment on A Document
 router.put(
-  "/documents/comment",
+  "/documents/comment/:id",
   auth,
   authorize("Supervisor"),
   commentOnDocument
