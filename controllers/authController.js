@@ -91,7 +91,7 @@ exports.researcherSignup = async (req, res) => {
       phone,
       topic,
       season: seasonID._id,
-      supervisor,
+      supervisor
     });
     await user.save();
 
@@ -102,6 +102,11 @@ exports.researcherSignup = async (req, res) => {
     });
     await progress.save();
 
+     // Add progress ID to user
+     user.progress = progress._id;
+     await user.save();
+    
+    
     const token = jwt.sign(
       { id: user._id, role: user.role, season: user.season },
       process.env.JWT_PRIVATE_KEY,
@@ -207,7 +212,9 @@ exports.updateSupervisor = async (req, res) => {
       { new: true }
     );
 
-    res.status(200).json(updatedUser);
+    const user = _.omit(updatedUser.toObject(), ["password", "__v"])
+
+    res.status(200).json(user);
   } catch (err) {
     res.status(500).json({ msg: "Server error", error: err.message });
   }
@@ -232,8 +239,9 @@ exports.updateResearcher = async (req, res) => {
       { name, email, role, gender, department: departmentId._id, matric, phone, topic, season },
       { new: true }
     );
+    const user = _.omit(updatedUser.toObject(), ["password", "__v"])
 
-    res.status(200).json(updatedUser);
+    res.status(200).json(user);
   } catch (err) {
     res.status(500).json({ msg: "Server error", error: err.message });
   }

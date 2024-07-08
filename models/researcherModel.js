@@ -12,7 +12,8 @@ const researcherSchema = new mongoose.Schema({
     phone: { type: String },
     topic: { type: String },
     season: { type: mongoose.Schema.Types.ObjectId, ref: 'Season' },
-    supervisor: { type: mongoose.Schema.Types.ObjectId, ref: 'Supervisor' }
+    supervisor: { type: mongoose.Schema.Types.ObjectId, ref: 'Supervisor' },
+    progress: { type: mongoose.Schema.Types.ObjectId, ref: 'Progress' }
 });
 
 researcherSchema.pre('save', async function(next) {

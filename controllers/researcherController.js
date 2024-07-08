@@ -177,7 +177,7 @@ exports.getAppointment = async (req, res) =>{
 exports.getProgress = async (req, res) =>{
 
     try{
-        const progress = await Progress.find({ researcherId: req.user._id }).select('progressPercent')
+        const progress = await Progress.find({ researcherId: req.user._id }).select('progressPercent', 'comments')
         res.status(200).json(progress);
     } catch (err){
         console.error(err);  

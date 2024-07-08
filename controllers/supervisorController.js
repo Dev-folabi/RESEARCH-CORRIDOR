@@ -5,17 +5,21 @@ const Supervisor = require("../models/supervisorModel");
 const Appointment = require("../models/appointmentModel");
 const sendEmail = require("../utils/notifier");
 const { createNotification } = require("./notificationController");
-
+const _ = require("lodash");
 
 // Get Supervisors
 exports.getSupervisors = async (req, res) => {
   const { department } = req.body;
 
   try {
-    const supervisors = await Supervisor.find({ department }).select("name _id");
+    const supervisors = await Supervisor.find({ department }).select(
+      "name _id"
+    );
 
     if (supervisors.length === 0) {
-      return res.status(404).json({ msg: `No supervisors found in the ${department} department` });
+      return res
+        .status(404)
+        .json({ msg: `No supervisors found in the ${department} department` });
     }
 
     res.status(200).json(supervisors);
@@ -34,40 +38,45 @@ exports.validationRequest = async (req, res) => {
     if (!validations)
       return res.status(200).json({ msg: "No Validation found" });
 
-    const validateDocument = validations.filter(validate => 
+    const validateDocument = validations.filter((validate) =>
       validate.researcherId.season.equals(req.season._id)
     );
 
     if (validateDocument.length === 0)
-      return res.status(200).json({ msg: "No Validation found" }); 
+      return res.status(200).json({ msg: "No Validation found" });
 
     res.status(200).json(validateDocument);
   } catch (err) {
-    res.status(400).json({ msg: "Error fetching validations", error: err.message });
+    res
+      .status(400)
+      .json({ msg: "Error fetching validations", error: err.message });
   }
 };
 
 // Get A Validation Request
 exports.getRequest = async (req, res) => {
+  try {
+    const validation = await TopicValidation.findById(req.params.id).populate(
+      "researcherId",
+      "matric name"
+    );
 
-    try {
-      const validation = await TopicValidation.findById(req.params.id).populate("researcherId", "matric name");
-  
-      if (!validation)
-        return res.status(200).json({ msg: "No Validation found" });
-  
-      res.status(200).json(validation);
-    } catch (err) {
-      res.status(400).json({ msg: "Error fetching validations", error: err.message });
-    }
-  };
+    if (!validation)
+      return res.status(200).json({ msg: "No Validation found" });
+
+    res.status(200).json(validation);
+  } catch (err) {
+    res
+      .status(400)
+      .json({ msg: "Error fetching validations", error: err.message });
+  }
+};
 
 // Comment on Validation
 exports.commentOnValidation = async (req, res) => {
   try {
     const { comment } = req.body;
     if (!comment) return res.status(404).json({ msg: "Comment is required" });
-    
 
     const document = await TopicValidation.findById(req.params.id);
     if (!document) return res.status(404).json({ msg: "Validation not found" });
@@ -79,20 +88,23 @@ exports.commentOnValidation = async (req, res) => {
     });
     await document.save();
 
-    const receiver = await Researcher.findById(document.researcherId)
+    const receiver = await Researcher.findById(document.researcherId);
 
     // System Notification
     const notificationData = {
-        receiverId: receiver._id,
-        receiverType: receiver.role,
-        message: `A new comment has been added to validation request you submitted.`
+      receiverId: receiver._id,
+      receiverType: receiver.role,
+      message: `A new comment has been added to validation request you submitted.`,
     };
 
-    createNotification(notificationData)
+    createNotification(notificationData);
 
     // Email Notification
-    sendEmail(receiver.email, 'Validation Reviewed', `A new comment has been added to validation request you submitted.`);
-
+    sendEmail(
+      receiver.email,
+      "Validation Reviewed",
+      `A new comment has been added to validation request you submitted.`
+    );
 
     res.status(200).json({ msg: "Comment added" });
   } catch (err) {
@@ -110,59 +122,89 @@ exports.getAllDocument = async (req, res) => {
     if (documents.length === 0)
       return res.status(200).json({ msg: "No Document found" });
 
-    const getDocument = documents.filter(document => 
+    const getDocument = documents.filter((document) =>
       document.researcherId.season.equals(req.season._id)
     );
 
     res.status(200).json(getDocument);
   } catch (err) {
-    res.status(400).json({ msg: "Error fetching documents", error: err.message });
+    res
+      .status(400)
+      .json({ msg: "Error fetching documents", error: err.message });
   }
-}
+};
 
 // Get A Document
 exports.getDocument = async (req, res) => {
-    try {
-      const document = await Document.findById(req.params.id).populate("researcherId", "season");
-  
-      if (!document)
-        return res.status(200).json({ msg: "No Document found" });
-  
-      res.status(200).json(document);
-    } catch (err) {
-      res.status(400).json({ msg: "Error fetching documents", error: err.message });
-    }
+  try {
+    const document = await Document.findById(req.params.id).populate(
+      "researcherId",
+      "season"
+    );
+
+    if (!document) return res.status(200).json({ msg: "No Document found" });
+
+    res.status(200).json(document);
+  } catch (err) {
+    res
+      .status(400)
+      .json({ msg: "Error fetching documents", error: err.message });
   }
+};
 
-
-  // Comment on Research Document
+// Comment on Research Document
 exports.commentOnDocument = async (req, res) => {
-    try {
-      const { comment } = req.body;
-      if (!comment) return res.status(404).json({ msg: "Comment is required" });
-      
-      const document = await Document.findById(req.params.id);
-      if (!document) return res.status(404).json({ msg: "No Document found" });
-  
-      document.comments.push( comment );
-      document.status = "Reviewed";
-document.reviewedDate = Date.now()
-      await document.save();
-  
-      const receiver = await Researcher.findById(document.researcherId)
+  try {
+    const { comment } = req.body;
+    if (!comment) return res.status(404).json({ msg: "Comment is required" });
+
+    const document = await Document.findById(req.params.id);
+    if (!document) return res.status(404).json({ msg: "No Document found" });
+
+    document.comments.push(comment);
+    document.status = "Reviewed";
+    document.reviewedDate = Date.now();
+    await document.save();
+
+    const receiver = await Researcher.findById(document.researcherId);
     // System Notification
     const notificationData = {
-        receiverId: receiver._id,
-        receiverType: receiver.role,
-        message: `A new comment has been added to your research document by your Supervisor.`
+      receiverId: receiver._id,
+      receiverType: receiver.role,
+      message: `A new comment has been added to your research document by your Supervisor.`,
     };
 
-    createNotification(notificationData)
+    createNotification(notificationData);
 
     // Email Notification
-    sendEmail(receiver.email, 'Research Document Reviewed', `A new comment has been added to your research document by your Supervisor.`);
-      res.status(200).json({ msg: "Comment added" });
-    } catch (err) {
-      res.status(400).json({ msg: "Error adding comment", error: err.message });
+    sendEmail(
+      receiver.email,
+      "Research Document Reviewed",
+      `A new comment has been added to your research document by your Supervisor.`
+    );
+    res.status(200).json({ msg: "Comment added" });
+  } catch (err) {
+    res.status(400).json({ msg: "Error adding comment", error: err.message });
+  }
+};
+
+
+// Get Assigned Researchers
+exports.getResearcher = async (req, res) => {
+  try {
+    const researchers = await Researcher.find({ supervisor: req.user._id }).populate('progress', 'progressPercent comment');
+
+    const assignedResearchers = researchers.filter(researcher => researcher.season.equals(req.season._id));
+
+    if (assignedResearchers.length === 0) {
+      return res.status(404).json({ msg: "No Researcher for this Season" });
     }
-  };
+
+    const sanitizedResearchers = assignedResearchers.map(researcher => _.omit(researcher.toObject(), ["password", "role", "supervisor", "__v"]));
+
+    res.status(200).json({ researchers: sanitizedResearchers });
+  } catch (err) {
+    res.status(500).json({ msg: "Internal Server Error", error: err.message });
+  }
+};
+
