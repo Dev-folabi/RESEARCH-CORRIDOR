@@ -14,7 +14,7 @@ const { auth, authorize } = require("../middlewares/auth");
 const router = express.Router();
 
 // Supervisor Routes
-router.post("/supervisors", getSupervisors);
+router.post("/", getSupervisors);
 
 // Validation Request Routes
 
