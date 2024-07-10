@@ -208,3 +208,15 @@ exports.getResearcher = async (req, res) => {
   }
 };
 
+
+// Get Profile
+exports.profile = async (req, res) =>{
+  try{
+      const supervisor = await Supervisor.findById(req.user._id).select('-password')
+      res.status(200).json(supervisor);
+  } catch (err){
+      console.error(err);  
+      res.status(500).json({ msg: 'Internal Server Error', error: err.message });
+  }
+}
+

@@ -7,6 +7,7 @@ const {
   getRequest,
   getDocument,
   commentOnDocument,
+  profile,
 } = require("../controllers/supervisorController");
 const setSeason = require("../middlewares/seasonValidate");
 const { auth, authorize } = require("../middlewares/auth");
@@ -53,5 +54,8 @@ router.put(
   authorize("Supervisor"),
   commentOnDocument
 );
+
+// Get Profile
+router.get('/', auth, profile)
 
 module.exports = router;
