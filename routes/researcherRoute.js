@@ -1,9 +1,10 @@
 const express = require('express');
 const { uploadTopic, selectSupervisor, uploadResearch, getTopics, getResearch, getProgress, profile, getAppointment, getResearchs, getTopic } = require('../controllers/researcherController');
-const { auth } = require('../middlewares/auth')
-const upload = require('../middlewares/uploadValidateDocument')
-const docUpload = require('../middlewares/uploadResearchDocument');
-const { validationDirectory, researchDirectory } = require('../middlewares/docDirMiddleware');
+const { auth } = require('../middlewares/auth');
+const { validationDirectory, researchDirectory } = require('../middlewares/uploadMiddleware');
+const { uploadValidateDocument, uploadResearchDocument } = require('../config/multer');
+
+
 
 const router = express.Router();
 
@@ -11,13 +12,13 @@ const router = express.Router();
 router.put('/select-supervisor', auth,  selectSupervisor);
 
 // Topic Validation Docs Routes
-router.post('/upload-topic', auth,  validationDirectory, upload.single('document'), uploadTopic);
+router.post('/upload-topic', auth,  validationDirectory, uploadValidateDocument.single('document'), uploadTopic);
 router.get('/get-topics',  auth, getTopics);
 router.get('/get-topics/:id',  getTopic);
 
 
 // Research Docs Routes
-router.post('/upload-research', auth,  researchDirectory, docUpload.single('document'), uploadResearch);
+router.post('/upload-research', auth,  researchDirectory, uploadResearchDocument.single('document'), uploadResearch);
 router.get('/get-research', auth,  getResearchs);
 router.get('/get-research/:id', getResearch);
 

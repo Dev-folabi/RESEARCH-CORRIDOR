@@ -7,7 +7,19 @@ const Appointment = require('../models/appointmentModel');
 const Progress = require("../models/progressModel");
 const sendEmail = require('../utils/notifier');
 const { createNotification } = require('./notificationController');
+const cloudinary = require('../config/cloudinaryConfig');
+const fs = require('fs');
 
+// Delete file from sever after upload
+const deleteFile = (path) => {
+    if (fs.existsSync(path)) {
+      try {
+        fs.unlinkSync(path);
+      } catch (err) {
+        console.error(`Failed to delete file at ${path}:`, err);
+      }
+    }
+  };
 
 // Select lecturer
 exports.selectSupervisor = async (req, res) => {
@@ -40,55 +52,63 @@ await progress.save()
     }
 };
 
-// Upload Topic for validation
-
+// Upload Topic for Validation
 exports.uploadTopic = async (req, res) => {
-    try {
-        const { title, supervisorIds } = req.body;
-        const document = req.file.path;
+  try {
+    const { title, supervisorIds } = req.body;
+    const document = req.file.path;
 
-        if (!supervisorIds || !document) {
-            return res.status(400).json({ msg: 'Supervisor IDs and document are required' });
-        }
-
-        // Ensure supervisorIds is an array of ObjectIds
-        const supervisorIdArray = JSON.parse(supervisorIds).map(id => new mongoose.Types.ObjectId(id));
-
-        if (supervisorIdArray.length > 10) {
-            return res.status(400).json({ msg: 'You can only select up to 10 supervisors' });
-        }
-
-        const topicValidation = new TopicValidation({
-            title,
-            researcherId: req.user.id,
-            document,
-            supervisorIds: supervisorIdArray
-        });
-        await topicValidation.save();
-
-        const researcher = await Researcher.findById(req.user._id);
-
-        const supervisors = await Supervisor.find({ _id: { $in: supervisorIdArray } });
-        
-        supervisors.forEach(supervisor => {
-            // System Notification
-            const notificationData = {
-                receiverId: supervisor._id,
-                receiverType: supervisor.role,
-                message: `A new topic validation request has been submitted by ${researcher.name} with matric no: ${researcher.matric}.`
-            };
-
-            createNotification(notificationData)
-
-            // Email Notification
-            sendEmail(supervisor.email, 'New Topic Validation Request', `A new topic validation request has been submitted by ${researcher.name}.`);
-        });
-
-        res.status(201).json({ msg: 'Topic validation request uploaded and supervisors notified' });
-    } catch (err) {
-        console.error(err);  
-        res.status(500).json({ msg: 'Internal Server Error', error: err.message });
+    if (!supervisorIds || !document) {
+      return res.status(400).json({ msg: 'Supervisor IDs and document are required' });
     }
+
+    // Ensure supervisorIds is an array of ObjectIds
+    const supervisorIdArray = JSON.parse(supervisorIds).map(id => new mongoose.Types.ObjectId(id));
+
+    if (supervisorIdArray.length > 10) {
+      return res.status(400).json({ msg: 'You can only select up to 10 supervisors' });
+    }
+
+    // Upload the file to Cloudinary
+    const result = await cloudinary.uploader.upload(document, {
+      resource_type: 'raw',
+      folder: 'validation_documents',
+      use_filename: true,
+      unique_filename: false
+    });
+
+    // Remove file from server after upload
+    deleteFile(document);
+
+    const topicValidation = new TopicValidation({
+      title,
+      researcherId: req.user.id,
+      document: result.secure_url,
+      supervisorIds: supervisorIdArray
+    });
+    await topicValidation.save();
+
+    const researcher = await Researcher.findById(req.user._id);
+    const supervisors = await Supervisor.find({ _id: { $in: supervisorIdArray } });
+
+    supervisors.forEach(supervisor => {
+      // System Notification
+      const notificationData = {
+        receiverId: supervisor._id,
+        receiverType: supervisor.role,
+        message: `A new topic validation request has been submitted by ${researcher.name} with matric no: ${researcher.matric}.`
+      };
+      createNotification(notificationData);
+
+      // Email Notification
+      sendEmail(supervisor.email, 'New Topic Validation Request', `A new topic validation request has been submitted by ${researcher.name}.`);
+    });
+
+    res.status(201).json({ msg: 'Topic validation request uploaded and supervisors notified' });
+  } catch (err) {
+    console.error(err);  
+    res.status(500).json({ msg: 'Internal Server Error', error: err.message });
+  }
 };
 
 
@@ -130,11 +150,22 @@ exports.uploadResearch = async (req, res) => {
             return res.status(400).send('Select a supervisor first');
         }
 
+        // Upload the file to Cloudinary
+    const result = await cloudinary.uploader.upload(document, {
+        resource_type: 'raw',
+        folder: 'validation_documents',
+        use_filename: true,
+        unique_filename: false
+      });
+
+      // Remove file from server after upload
+    deleteFile(document);
+
         const doc = new Document({
             researcherId: req.user._id,
             supervisorId: supervisorId,
             title,
-            document
+            document: result.secure_url
         });
         await doc.save();
 
