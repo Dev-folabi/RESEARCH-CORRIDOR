@@ -3,6 +3,7 @@ const Document = require("../models/documentModel");
 const Researcher = require("../models/researcherModel");
 const Supervisor = require("../models/supervisorModel");
 const Appointment = require("../models/appointmentModel");
+const Progress = require("../models/progressModel");
 const sendEmail = require("../utils/notifier");
 const { createNotification } = require("./notificationController");
 const _ = require("lodash");
@@ -23,6 +24,18 @@ exports.getSupervisors = async (req, res) => {
     }
 
     res.status(200).json(supervisors);
+  } catch (err) {
+    res.status(500).json({ msg: "Internal Server Error", error: err.message });
+  }
+};
+
+// Get Profile
+exports.profile = async (req, res) => {
+  try {
+    const supervisor = await Supervisor.findById(req.user._id).select(
+      "-password"
+    );
+    res.status(200).json(supervisor);
   } catch (err) {
     res.status(500).json({ msg: "Internal Server Error", error: err.message });
   }
@@ -196,8 +209,9 @@ exports.getResearchers = async (req, res) => {
       supervisor: req.user._id,
     }).populate("progress", "progressPercent comment");
 
+
     const assignedResearchers = researchers.filter((researcher) =>
-      researcher.season.equals(req.season._id)
+      researcher.season.equals(req.season.id)
     );
 
     if (assignedResearchers.length === 0) {
@@ -243,7 +257,7 @@ exports.getResearcher = async (req, res) => {
 exports.createAppointment = async (req, res) => {
   try {
     const { researcherId, date, time, agenda } = req.body;
-    const supervisorId = req.user._id;
+    const supervisorId = req.user.id;
 
     const appointment = new Appointment({
       supervisorId,
@@ -282,7 +296,7 @@ exports.createAppointment = async (req, res) => {
 // Get Appointments
 exports.getAppointments = async (req, res) => {
   try {
-    const appointments = await Appointment.find({ supervisorId: req.user._id });
+    const appointments = await Appointment.find({ supervisorId: req.user.id });
 
     if (!appointments.length) {
       return res.status(404).json({ msg: "No Appointments found" });
@@ -349,14 +363,70 @@ exports.deleteAppointment = async (req, res) => {
   }
 };
 
-// Get Profile
-exports.profile = async (req, res) => {
+// Get All Researchers' Progress and Comments
+exports.getAllProgress = async (req, res) => {
   try {
-    const supervisor = await Supervisor.findById(req.user._id).select(
-      "-password"
-    );
-    res.status(200).json(supervisor);
+    const progress = await Progress.find({ supervisorId: req.user._id }).populate('researcherId', 'name matric');
+    
+    if (progress.length === 0) {
+      return res.status(404).json({ msg: "No Researchers' Progress for this Supervisor" });
+    }
+
+    res.status(200).json({ msg: "All Researchers' Progress and Comments", progress });
   } catch (err) {
     res.status(500).json({ msg: "Internal Server Error", error: err.message });
   }
-};
+}
+
+// Get Single Researcher's Progress and Comments
+exports.getSingleProgress = async (req, res) => {
+  try {
+    const progress = await Progress.findOne({ researcherId: req.params.id }).populate('researcherId', 'name matric');
+    
+    if (!progress) {
+      return res.status(404).json({ msg: "Progress Not Found" });
+    }
+
+    res.status(200).json({ msg: "Single Researcher's Progress and Comments", progress });
+  } catch (err) {
+    res.status(500).json({ msg: "Internal Server Error", error: err.message });
+  }
+}
+
+// Add Progress and Comments
+exports.addProgressAndComments = async (req, res) => {
+  try {
+    const { progressId, percentage, comments } = req.body;
+
+    const progress = await Progress.findById(progressId).populate('researcherId', 'name matric');
+    if (!progress) {
+      return res.status(404).json({ msg: "Progress Not Found" });
+    }
+
+    progress.progressPercent += percentage;
+    progress.comments.push(comments);
+    await progress.save();
+
+    const researcher = await Researcher.findById(progress.researcherId);
+
+    // System Notification
+    const notificationData = {
+      receiverId: researcher._id,
+      receiverType: "Researcher",
+      message: `Comment has been added to your Research Progress by your Supervisor.`,
+    };
+
+    createNotification(notificationData);
+
+    // Email Notification
+    sendEmail(
+      researcher.email,
+      "Research Progress Update",
+      `A comment has been added to your Research Progress by your Supervisor.`
+    );
+
+    res.status(200).json({ msg: "Progress and Comments Updated", progress });
+  } catch (err) {
+    res.status(500).json({ msg: "Internal Server Error", error: err.message });
+  }
+}

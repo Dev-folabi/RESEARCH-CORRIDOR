@@ -14,15 +14,22 @@ const {
   deleteAppointment,
   getResearchers,
   getResearcher,
+  addProgressAndComments,
+  getAllProgress,
+  getSingleProgress
 } = require("../controllers/supervisorController");
 const setSeason = require("../middlewares/seasonValidate");
 const { auth, authorize } = require("../middlewares/auth");
 const { route } = require("./researcherRoute");
+const { getProgress } = require("../controllers/researcherController");
 
 const router = express.Router();
 
 // Supervisor Routes
 router.post("/", getSupervisors);
+
+// Get Profile
+router.get('/', auth, profile)
 
 // Validation Request Routes
 
@@ -74,7 +81,9 @@ router.get('/appointments', auth, authorize('Supervisor'), getAppointments);
 router.put('/update-appointment', auth, authorize('Supervisor'), editAppointment);
 router.delete('/delete-appointment', auth, authorize('Supervisor'), deleteAppointment);
 
-// Get Profile
-router.get('/', auth, profile)
+// Progress and Comments CRUD
+router.post('/add-progress', auth, authorize('Supervisor'), addProgressAndComments);
+router.get('/get-all-progress', auth, getAllProgress);
+router.get('/get-progress/:id', auth, getSingleProgress);
 
 module.exports = router;
