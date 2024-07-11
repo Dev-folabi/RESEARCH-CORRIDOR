@@ -93,7 +93,7 @@ exports.uploadTopic = async (req, res) => {
 
 
 
-// Get uploaded Topic
+// Get uploaded Topic Validations
 exports.getTopics = async (req, res) => {
     try {
         const uploadedTopics = await TopicValidation.find({ researcherId: req.user._id }).populate('supervisorIds', 'name email');
@@ -104,7 +104,18 @@ exports.getTopics = async (req, res) => {
     }
 };
 
-// Upload Research Document
+//  Get Single uploaded Topic Validations
+exports.getTopic = async (req, res) => {
+    try {
+        const uploadedTopic = await TopicValidation.findById(req.params.id).populate('supervisorIds', 'name email');
+
+        res.status(200).json(uploadedTopic);
+    } catch (err) {
+        res.status(500).send('Internal Server Error');
+    }
+};
+
+// Upload Research Documents
 exports.uploadResearch = async (req, res) => {
     try {
         const document = req.file.path;
@@ -149,9 +160,21 @@ exports.uploadResearch = async (req, res) => {
 };
 
 // Get uploaded Research
-exports.getResearch = async (req, res) => {
+exports.getResearchs = async (req, res) => {
     try {
         const uploadedResearch = await Document.find({ researcherId: req.user._id }).select('-researcherId').select('-supervisorId')
+
+        res.status(200).json(uploadedResearch);
+    } catch (err) {
+        console.error(err);  
+        res.status(500).json({ msg: 'Internal Server Error', error: err.message });
+    }
+};
+
+// Get Single uploaded Research
+exports.getResearch = async (req, res) => {
+    try {
+        const uploadedResearch = await Document.findById(req.params.id).select('-researcherId').select('-supervisorId')
 
         res.status(200).json(uploadedResearch);
     } catch (err) {

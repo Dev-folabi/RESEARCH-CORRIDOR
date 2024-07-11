@@ -8,9 +8,14 @@ const {
   getDocument,
   commentOnDocument,
   profile,
+  createAppointment,
+  getAppointment,
+  editAppointment,
+  deleteAppointment,
 } = require("../controllers/supervisorController");
 const setSeason = require("../middlewares/seasonValidate");
 const { auth, authorize } = require("../middlewares/auth");
+const { route } = require("./researcherRoute");
 
 const router = express.Router();
 
@@ -54,6 +59,12 @@ router.put(
   authorize("Supervisor"),
   commentOnDocument
 );
+
+//  Appointment CRUD
+router.post("/createappointment", auth, authorize('Supervisor'), createAppointment);
+router.get('/appointments', auth, getAppointment);
+router.put('/updateappointment', authorize('Supervisor'), editAppointment );
+router.delete('/deleteappointment', authorize('Supervisor'), deleteAppointment )
 
 // Get Profile
 router.get('/', auth, profile)

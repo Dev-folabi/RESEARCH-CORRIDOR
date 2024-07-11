@@ -167,6 +167,7 @@ exports.commentOnDocument = async (req, res) => {
     await document.save();
 
     const receiver = await Researcher.findById(document.researcherId);
+    
     // System Notification
     const notificationData = {
       receiverId: receiver._id,
@@ -249,6 +250,18 @@ exports.createAppointment = async (req, res) => {
     res.status(200).json({ msg: "Appointment Created", appointment });
   } catch (err) {
     res.status(500).json({ msg: "Internal Server Error", error: err.message });
+  }
+};
+
+// Get Appointment
+exports.getAppointment = async (req, res) =>{
+
+  try{
+      const appointment = await Appointment.find({ supervisorId: req.user._id })
+      res.status(200).json(appointment);
+  }catch (err){
+      console.error(err);  
+      res.status(500).json({ msg: 'Internal Server Error', error: err.message });
   }
 };
 
