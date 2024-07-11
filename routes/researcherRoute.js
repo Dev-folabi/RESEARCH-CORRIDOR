@@ -13,7 +13,7 @@ router.put('/select-supervisor', auth,  selectSupervisor);
 // Topic Validation Docs Routes
 router.post('/upload-topic', auth,  validationDirectory, upload.single('document'), uploadTopic);
 router.get('/get-topics',  auth, getTopics);
-router.get('/get-topic/:id',  getTopic);
+router.get('/get-topics/:id',  getTopic);
 
 
 // Research Docs Routes
