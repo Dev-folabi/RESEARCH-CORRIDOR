@@ -188,19 +188,24 @@ exports.commentOnDocument = async (req, res) => {
   }
 };
 
-
 // Get Assigned Researchers
 exports.getResearcher = async (req, res) => {
   try {
-    const researchers = await Researcher.find({ supervisor: req.user._id }).populate('progress', 'progressPercent comment');
+    const researchers = await Researcher.find({
+      supervisor: req.user._id,
+    }).populate("progress", "progressPercent comment");
 
-    const assignedResearchers = researchers.filter(researcher => researcher.season.equals(req.season._id));
+    const assignedResearchers = researchers.filter((researcher) =>
+      researcher.season.equals(req.season._id)
+    );
 
     if (assignedResearchers.length === 0) {
       return res.status(404).json({ msg: "No Researcher for this Season" });
     }
 
-    const sanitizedResearchers = assignedResearchers.map(researcher => _.omit(researcher.toObject(), ["password", "role", "supervisor", "__v"]));
+    const sanitizedResearchers = assignedResearchers.map((researcher) =>
+      _.omit(researcher.toObject(), ["password", "role", "supervisor", "__v"])
+    );
 
     res.status(200).json({ researchers: sanitizedResearchers });
   } catch (err) {
@@ -208,15 +213,111 @@ exports.getResearcher = async (req, res) => {
   }
 };
 
+// Create Appointment
+exports.createAppointment = async (req, res) => {
+  try {
+    const { researcherId, date, time, agenda } = req.body;
+    const supervisorId = await Supervisor.findById(req.user_id);
+
+    const appointment = await new Appointment({
+      supervisorId: supervisorId._id,
+      researcherId,
+      date,
+      time,
+      agenda,
+    });
+    await appointment.save();
+
+    const researcher = await Researcher.findById(researcherId);
+
+    // System Notification
+    const notificationData = {
+      receiverId: researcher._id,
+      receiverType: "Researcher",
+      message: `An Appointment has been scheduled by your Supervisor. Date ${date}, Time ${time}, Agenda ${agenda}.`,
+    };
+
+    createNotification(notificationData);
+
+    // Email Notification
+    sendEmail(
+      researcher.email,
+      "New Appointment",
+      `A new Appointment has been scheduled by your Supervisor. Date ${date}, Time ${time}, Agenda ${agenda}.`
+    );
+
+    res.status(200).json({ msg: "Appointment Created", appointment });
+  } catch (err) {
+    res.status(500).json({ msg: "Internal Server Error", error: err.message });
+  }
+};
+
+// Edit Appointment
+exports.editAppointment = async (req, res) => {
+  try {
+    const { appointmentId, date, time, agenda } = req.body;
+    const appointment = await Appointment.findByIdAndUpdate(appointmentId);
+    if (!appointment)
+      res.status(400).json({ msg: "Appointment is not available" });
+
+    const newAppointment = await Appointment.findByIdAndUpdate(
+      { appointment },
+      {
+        date,
+        time,
+        agenda,
+      },
+      { new: true }
+    );
+    await newAppointment.save();
+
+    const researcher = await Researcher.findById(appointment.researcherId);
+
+    // System Notification
+    const notificationData = {
+      receiverId: researcher._id,
+      receiverType: "Researcher",
+      message: `An Appointment scheduled earlier by your Supervisor has been Re-scheduled. Date ${date}, Time ${time}, Agenda ${agenda}.`,
+    };
+
+    createNotification(notificationData);
+
+    // Email Notification
+    sendEmail(
+      researcher.email,
+      "Appointment Re-scheduled",
+      `An Appointment scheduled earlier by your Supervisor has been Re-scheduled. Date ${date}, Time ${time}, Agenda ${agenda}.`
+    );
+
+    res.status(200).json({ msg: "Appointment Updated", newAppointment });
+  } catch (err) {
+    res.status(500).json({ msg: "Internal Server Error", error: err.message });
+  }
+};
+
+// Delete Appointment
+exports.deleteAppointment = async (req, res) => {
+  try {
+    const { appointmentId } = req.body;
+
+    const appointment = await Appointment.findByIdAndDelete(appointmentId);
+    if (!appointment)
+      res.status(400).json({ msg: "Appointment is not available" });
+
+    res.status(200).json("Appointment Deleted");
+  } catch (err) {
+    res.status(500).json({ msg: "Internal Server Error", error: err.message });
+  }
+};
 
 // Get Profile
-exports.profile = async (req, res) =>{
-  try{
-      const supervisor = await Supervisor.findById(req.user._id).select('-password')
-      res.status(200).json(supervisor);
-  } catch (err){
-      console.error(err);  
-      res.status(500).json({ msg: 'Internal Server Error', error: err.message });
+exports.profile = async (req, res) => {
+  try {
+    const supervisor = await Supervisor.findById(req.user._id).select(
+      "-password"
+    );
+    res.status(200).json(supervisor);
+  } catch (err) {
+    res.status(500).json({ msg: "Internal Server Error", error: err.message });
   }
-}
-
+};
