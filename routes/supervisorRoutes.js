@@ -9,9 +9,11 @@ const {
   commentOnDocument,
   profile,
   createAppointment,
-  getAppointment,
+  getAppointments,
   editAppointment,
   deleteAppointment,
+  getResearchers,
+  getResearcher,
 } = require("../controllers/supervisorController");
 const setSeason = require("../middlewares/seasonValidate");
 const { auth, authorize } = require("../middlewares/auth");
@@ -60,11 +62,17 @@ router.put(
   commentOnDocument
 );
 
-//  Appointment CRUD
-router.post("/createappointment", auth, authorize('Supervisor'), createAppointment);
-router.get('/appointments', auth, getAppointment);
-router.put('/updateappointment', authorize('Supervisor'), editAppointment );
-router.delete('/deleteappointment', authorize('Supervisor'), deleteAppointment )
+// Get All Researchers
+router.get('/get-researchers', auth, setSeason, getResearchers);
+
+// Get A Researcher
+router.get('/get-researchers/:id', auth, setSeason, getResearcher);
+
+// Appointment CRUD
+router.post('/create-appointment', auth, authorize('Supervisor'), createAppointment);
+router.get('/appointments', auth, authorize('Supervisor'), getAppointments);
+router.put('/update-appointment', auth, authorize('Supervisor'), editAppointment);
+router.delete('/delete-appointment', auth, authorize('Supervisor'), deleteAppointment);
 
 // Get Profile
 router.get('/', auth, profile)
