@@ -14,7 +14,7 @@ exports.getSupervisors = async (req, res) => {
   const { department } = req.body;
 
   try {
-const departmentId = await Department.find({ department })
+const departmentId = await Department.findOne({ department })
 
 
     const supervisors = await Supervisor.find({ department: departmentId._id }).select(
