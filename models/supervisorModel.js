@@ -8,7 +8,7 @@ const supervisorSchema = new mongoose.Schema({
     role: { type: String, default: 'Supervisor'},
     prefix: { type: String, require: true },
     gender: { type: String },
-    department: { type: String },
+    department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
     phone: { type: String }
 });
 

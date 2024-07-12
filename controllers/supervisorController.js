@@ -2,6 +2,7 @@ const TopicValidation = require("../models/topicValidationModel");
 const Document = require("../models/documentModel");
 const Researcher = require("../models/researcherModel");
 const Supervisor = require("../models/supervisorModel");
+const Department = require("../models/departmentModel")
 const Appointment = require("../models/appointmentModel");
 const Progress = require("../models/progressModel");
 const sendEmail = require("../utils/notifier");
@@ -13,10 +14,13 @@ exports.getSupervisors = async (req, res) => {
   const { department } = req.body;
 
   try {
-    const supervisors = await Supervisor.find({ department }).select(
+const departmentId = await Department.find({ department })
+
+
+    const supervisors = await Supervisor.find({ department: departmentId._id }).select(
       "name _id"
     );
-
+ 
     if (supervisors.length === 0) {
       return res
         .status(404)
