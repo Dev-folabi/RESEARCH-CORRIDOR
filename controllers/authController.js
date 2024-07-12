@@ -3,6 +3,7 @@ const Supervisor = require("../models/supervisorModel");
 const Season = require("../models/seasonModel");
 const Progress = require("../models/progressModel");
 const Department = require("../models/departmentModel");
+const Grade = require("../models/gradeModel");
 const jwt = require("jsonwebtoken");
 const _ = require("lodash");
 const sendEmail = require("../utils/notifier");
@@ -101,6 +102,15 @@ exports.researcherSignup = async (req, res) => {
       researcherId: user._id,
     });
     await progress.save();
+
+    // Create Researcher Grade
+    const grade = new Grade({
+      researcherId: user._id,
+      name,
+      matric,
+      projectTitle: topic
+    });
+    await grade.save();
 
      // Add progress ID to user
      user.progress = progress._id;
