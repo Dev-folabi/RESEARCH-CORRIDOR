@@ -407,7 +407,7 @@ exports.addProgressAndComments = async (req, res) => {
       return res.status(404).json({ msg: "Progress Not Found" });
     }
 
-    progress.progressPercent += percentage;
+    progress.progressPercent = percentage;
     progress.comments.push(comments);
     await progress.save();
 
