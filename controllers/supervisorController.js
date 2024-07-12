@@ -407,8 +407,13 @@ exports.addProgressAndComments = async (req, res) => {
       return res.status(404).json({ msg: "Progress Not Found" });
     }
 
+    // Update the progress percentage
     progress.progressPercent = percentage;
-    progress.comments.push(comments);
+
+    // Add the new comment with the current date
+    progress.comments.push({ comment: comments });
+
+    // Save the updated progress document
     await progress.save();
 
     const researcher = await Researcher.findById(progress.researcherId);
@@ -417,7 +422,7 @@ exports.addProgressAndComments = async (req, res) => {
     const notificationData = {
       receiverId: researcher._id,
       receiverType: "Researcher",
-      message: `Comment has been added to your Research Progress by your Supervisor.`,
+      message: `A comment has been added to your Research Progress by your Supervisor.`,
     };
 
     createNotification(notificationData);
@@ -433,4 +438,4 @@ exports.addProgressAndComments = async (req, res) => {
   } catch (err) {
     res.status(500).json({ msg: "Internal Server Error", error: err.message });
   }
-}
+};
