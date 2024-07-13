@@ -50,7 +50,7 @@ exports.validationRequest = async (req, res) => {
   try {
     const validations = await TopicValidation.find({
       supervisorIds: req.user._id,
-    }).populate("researcherId", "season");
+    }).populate("researcherId", "season matric");
 
     if (!validations)
       return res.status(200).json({ msg: "No Validation found" });
