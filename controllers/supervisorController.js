@@ -60,7 +60,7 @@ exports.validationRequest = async (req, res) => {
     );
 
     if (validateDocument.length === 0)
-      return res.status(200).json({ msg: "No Validation found" });
+      return res.status(200).json({ msg: `No Validation found for the season ${req.season.season}` });
 
     res.status(200).json(validateDocument);
   } catch (err) {
@@ -142,6 +142,9 @@ exports.getAllDocument = async (req, res) => {
     const getDocument = documents.filter((document) =>
       document.researcherId.season.equals(req.season._id)
     );
+
+    if (getDocument.length === 0)
+      return res.status(200).json({ msg: `No Document found for the season ${req.season.season}` });
 
     res.status(200).json(getDocument);
   } catch (err) {

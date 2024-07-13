@@ -20,8 +20,7 @@ const {
 } = require("../controllers/supervisorController");
 const setSeason = require("../middlewares/seasonValidate");
 const { auth, authorize } = require("../middlewares/auth");
-const { route } = require("./researcherRoute");
-const { getProgress } = require("../controllers/researcherController");
+
 
 const router = express.Router();
 
