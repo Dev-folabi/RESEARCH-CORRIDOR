@@ -79,7 +79,7 @@ router.get('/get-researchers/:id', auth, getResearcher);
 
 // Appointment CRUD
 router.post('/create-appointment', auth, authorize('Supervisor'), createAppointment);
-router.get('/appointments', auth, authorize('Supervisor'), getAppointments);
+router.get('/appointments', auth, authorize('Supervisor'), setSeason,  getAppointments);
 router.put('/update-appointment', auth, authorize('Supervisor'), editAppointment);
 router.delete('/delete-appointment', auth, authorize('Supervisor'), deleteAppointment);
 

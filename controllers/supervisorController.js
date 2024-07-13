@@ -214,9 +214,9 @@ exports.commentOnDocument = async (req, res) => {
 exports.getResearchers = async (req, res) => {
   try {
     const researchers = await Researcher.find({
-      supervisor: req.user._id,
+      supervisor: req.user.id,
     }).populate("progress", "progressPercent comments");
-
+ 
     const assignedResearchers = researchers.filter((researcher) =>
       researcher.season.equals(req.season.id)
     );
@@ -378,7 +378,7 @@ exports.deleteAppointment = async (req, res) => {
 // Get All Researchers' Progress and Comments
 exports.getAllProgress = async (req, res) => {
   try {
-    const progress = await Progress.find({ supervisorId: req.user._id }).populate('researcherId', 'season name matric');
+    const progress = await Progress.find({ supervisorId: req.user.id }).populate('researcherId', 'season name matric');
 
     if (progress.length === 0) {
       return res.status(404).json({ msg: "No Researchers' Progress for this Supervisor" });
