@@ -5,6 +5,7 @@ const Supervisor = require("../models/supervisorModel");
 const Department = require("../models/departmentModel")
 const Appointment = require("../models/appointmentModel");
 const Progress = require("../models/progressModel");
+const Grade = require("../models/gradeModel");
 const sendEmail = require("../utils/notifier");
 const { createNotification } = require("./notificationController");
 const _ = require("lodash");
@@ -214,15 +215,14 @@ exports.getResearchers = async (req, res) => {
   try {
     const researchers = await Researcher.find({
       supervisor: req.user._id,
-    }).populate("progress", "progressPercent comment");
-
+    }).populate("progress", "progressPercent comments");
 
     const assignedResearchers = researchers.filter((researcher) =>
       researcher.season.equals(req.season.id)
     );
 
     if (assignedResearchers.length === 0) {
-      return res.status(404).json({ msg: "No Researcher for this Season" });
+      return res.status(404).json({ msg: `No Researcher for the season ${req.season.season}` });
     }
 
     const sanitizedResearchers = assignedResearchers.map((researcher) =>
@@ -303,13 +303,18 @@ exports.createAppointment = async (req, res) => {
 // Get Appointments
 exports.getAppointments = async (req, res) => {
   try {
-    const appointments = await Appointment.find({ supervisorId: req.user.id });
+    const appointments = await Appointment.find({ supervisorId: req.user.id }).populate("researcherId", "season");
 
     if (!appointments.length) {
       return res.status(404).json({ msg: "No Appointments found" });
     }
 
-    res.status(200).json({ appointments });
+    const appointmentBySeason = appointments.filter(appoint => appoint.researcherId.season.equals(req.season.id));
+    if (appointmentBySeason.length === 0) {
+      return res.status(404).json({ msg: `No Appointments found for the season ${req.season.season}` });
+    }
+
+    res.status(200).json({ appointments: appointmentBySeason });
   } catch (err) {
     res.status(500).json({ msg: "Internal Server Error", error: err.message });
   }
@@ -373,17 +378,25 @@ exports.deleteAppointment = async (req, res) => {
 // Get All Researchers' Progress and Comments
 exports.getAllProgress = async (req, res) => {
   try {
-    const progress = await Progress.find({ supervisorId: req.user._id }).populate('researcherId', 'name matric');
-    
+    const progress = await Progress.find({ supervisorId: req.user._id }).populate('researcherId', 'season name matric');
+
     if (progress.length === 0) {
       return res.status(404).json({ msg: "No Researchers' Progress for this Supervisor" });
     }
 
-    res.status(200).json({ msg: "All Researchers' Progress and Comments", progress });
+    const assignedProgress = progress.filter((progress) =>
+      progress.researcherId.season.equals(req.season.id)
+    );
+
+    if (assignedProgress.length === 0) {
+      return res.status(404).json({ msg: `No Researcher Progress for the season ${req.season.season}` });
+    }
+
+    res.status(200).json({ msg: "All Researchers' Progress and Comments", progress: assignedProgress });
   } catch (err) {
     res.status(500).json({ msg: "Internal Server Error", error: err.message });
   }
-}
+};
 
 // Get Single Researcher's Progress and Comments
 exports.getSingleProgress = async (req, res) => {
@@ -438,6 +451,75 @@ exports.addProgressAndComments = async (req, res) => {
     );
 
     res.status(200).json({ msg: "Progress and Comments Updated", progress });
+  } catch (err) {
+    res.status(500).json({ msg: "Internal Server Error", error: err.message });
+  }
+};
+
+// Get All Researchers' Grades
+exports.getAllGrade = async (req, res) => {
+  try {
+    const grades = await Grade.find({ supervisorId: req.user._id }).populate('researcherId', 'season name matric');
+    
+    if (grades.length === 0) {
+      return res.status(404).json({ msg: "No Researchers' Grades for this Supervisor" });
+    }
+
+    const assignedGrades = grades.filter(grade => grade.researcherId.season.equals(req.season.id));
+
+    if (assignedGrades.length === 0) {
+      return res.status(404).json({ msg: `No Researchers' Grades for the season ${req.season.season}` });
+    }
+
+    res.status(200).json({ msg: "All Researchers' Grades", grades: assignedGrades });
+  } catch (err) {
+    res.status(500).json({ msg: "Internal Server Error", error: err.message });
+  }
+};
+
+// Get Single Researcher's Grade
+exports.getSingleGrade = async (req, res) => {
+  try {
+    const grade = await Grade.findOne({ researcherId: req.params.id }).populate('researcherId', 'name matric');
+    
+    if (!grade) {
+      return res.status(404).json({ msg: "Grade Not Found" });
+    }
+
+    res.status(200).json({ msg: "Single Researcher's Grade", grade });
+  } catch (err) {
+    res.status(500).json({ msg: "Internal Server Error", error: err.message });
+  }
+};
+
+// Add Grade
+exports.addGrade = async (req, res) => {
+  try {
+    const { gradeId, introduction, reviewLit, researchMethod, dataAnalysis, discussion, language, reference, formart, total, generalComment, evaluator } = req.body;
+
+    const grade = await Grade.findById(gradeId).populate('researcherId', 'name matric');
+    if (!grade) {
+      return res.status(404).json({ msg: "Grade Not Found" });
+    }
+
+    // Update Grade data
+    grade.introduction = introduction;
+    grade.reviewLit = reviewLit;
+    grade.researchMethod = researchMethod;
+    grade.dataAnalysis = dataAnalysis;
+    grade.discussion = discussion;
+    grade.language = language;
+    grade.reference = reference;
+    grade.formart = formart;
+    grade.total = total;
+    grade.generalComment = generalComment;
+    grade.evaluator = evaluator;
+    grade.date = Date.now()
+
+    // Save the updated grade document
+    await grade.save();
+
+    res.status(200).json({ msg: "Grade Updated", grade });
   } catch (err) {
     res.status(500).json({ msg: "Internal Server Error", error: err.message });
   }

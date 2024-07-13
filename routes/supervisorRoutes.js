@@ -16,7 +16,10 @@ const {
   getResearcher,
   addProgressAndComments,
   getAllProgress,
-  getSingleProgress
+  getSingleProgress,
+  getAllGrade,
+  addGrade,
+  getSingleGrade
 } = require("../controllers/supervisorController");
 const setSeason = require("../middlewares/seasonValidate");
 const { auth, authorize } = require("../middlewares/auth");
@@ -69,7 +72,7 @@ router.put(
 );
 
 // Get All Researchers
-router.get('/get-researchers', auth, setSeason, getResearchers);
+router.get('/get-researchers', auth, authorize('Supervisor'), setSeason, getResearchers);
 
 // Get A Researcher
 router.get('/get-researchers/:id', auth, getResearcher);
@@ -82,7 +85,12 @@ router.delete('/delete-appointment', auth, authorize('Supervisor'), deleteAppoin
 
 // Progress and Comments CRUD
 router.post('/add-progress', auth, authorize('Supervisor'), addProgressAndComments);
-router.get('/get-all-progress', auth, getAllProgress);
+router.get('/get-all-progress', auth, authorize('Supervisor'), setSeason, getAllProgress);
 router.get('/get-progress/:id', auth, getSingleProgress);
+
+// Grade CRUD Routes
+router.get('/grades', auth, authorize('Supervisor'), setSeason, getAllGrade);
+router.post('/grades', auth, authorize('Supervisor'), addGrade);
+router.get('/grades/:id', auth, authorize('Supervisor'), getSingleGrade);
 
 module.exports = router;

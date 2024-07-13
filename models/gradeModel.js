@@ -2,6 +2,7 @@ const mongoose = require("mongoose")
 
 const gradeSchema = new mongoose.Schema({
     researcherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Researcher', required: true },
+    supervisorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Supervisor' },
     name: { type: String, required: true },
     matric: { type: String, required: true },
     projectTitle: { type: String },

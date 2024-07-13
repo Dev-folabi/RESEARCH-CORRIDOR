@@ -106,6 +106,7 @@ exports.researcherSignup = async (req, res) => {
     // Create Researcher Grade
     const grade = new Grade({
       researcherId: user._id,
+      supervisorId: supervisor,
       name,
       matric,
       projectTitle: topic
