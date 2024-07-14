@@ -18,7 +18,8 @@ const DocumentSchema = new mongoose.Schema({
     enum: ["Reviewed", "Not Reviewed"],
     default: "Not Reviewed",
   },
-  comments: [{ type: String }],
+  comments: [ {message: { type: String }}],
+
   reviewedDate: {
     type: Date,
   },

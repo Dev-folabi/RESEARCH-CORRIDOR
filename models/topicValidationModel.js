@@ -16,7 +16,7 @@ const TopicValidationSchema = new mongoose.Schema({
     {
       supervisorId: { type: mongoose.Schema.Types.ObjectId, ref: "Supervisor" },
 
-      comment: String,
+      comment: {type: String},
 
       status: {
         type: String,
