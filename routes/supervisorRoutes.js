@@ -36,7 +36,7 @@ router.get('/', auth, profile)
 // Validation Request Routes
 
 //  Get All Validation request
-router.get("/validation-requests", auth, setSeason, validationRequest);
+router.get("/validation-requests/:season", auth, setSeason, validationRequest);
 
 // Get A Validation request
 router.get("/validation-requests/:id", auth, getRequest);
@@ -53,7 +53,7 @@ router.put(
 
 // Get All Documents
 router.get(
-  "/documents",
+  "/documents/:season",
   auth,
   authorize("Supervisor"),
   setSeason,
@@ -72,25 +72,25 @@ router.put(
 );
 
 // Get All Researchers
-router.get('/get-researchers', auth, authorize('Supervisor'), setSeason, getResearchers);
+router.get('/get-researchers/:season', auth, authorize('Supervisor'), setSeason, getResearchers);
 
 // Get A Researcher
 router.get('/get-researchers/:id', auth, getResearcher);
 
 // Appointment CRUD
 router.post('/create-appointment', auth, authorize('Supervisor'), createAppointment);
-router.get('/appointments', auth, authorize('Supervisor'), setSeason,  getAppointments);
+router.get('/appointments/:season', auth, authorize('Supervisor'), setSeason,  getAppointments);
 router.put('/update-appointment', auth, authorize('Supervisor'), editAppointment);
 router.delete('/delete-appointment', auth, authorize('Supervisor'), deleteAppointment);
 
 // Progress and Comments CRUD
 router.post('/add-progress', auth, authorize('Supervisor'), addProgressAndComments);
-router.get('/get-all-progress', auth, authorize('Supervisor'), setSeason, getAllProgress);
+router.get('/get-all-progress/:season', auth, authorize('Supervisor'), setSeason, getAllProgress);
 router.get('/get-progress/:id', auth, getSingleProgress);
 
 // Grade CRUD Routes
-router.get('/grades', auth, authorize('Supervisor'), setSeason, getAllGrade);
 router.post('/grades', auth, authorize('Supervisor'), addGrade);
+router.get('/grades/:season', auth, authorize('Supervisor'), setSeason, getAllGrade);
 router.get('/grades/:id', auth, authorize('Supervisor'), getSingleGrade);
 
 module.exports = router;

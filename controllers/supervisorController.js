@@ -308,7 +308,7 @@ exports.getAppointments = async (req, res) => {
     if (!appointments.length) {
       return res.status(404).json({ msg: "No Appointments found" });
     }
-
+    console.log("Appointments fetched:", appointments);
     const appointmentBySeason = appointments.filter(appoint => appoint.researcherId.season.equals(req.season.id));
     if (appointmentBySeason.length === 0) {
       return res.status(404).json({ msg: `No Appointments found for the season ${req.season.season}` });
