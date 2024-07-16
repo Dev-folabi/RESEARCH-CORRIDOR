@@ -39,11 +39,11 @@ router.get('/', auth, profile)
 router.get("/validation-requests/:season", auth, setSeason, validationRequest);
 
 // Get A Validation request
-router.get("/validation-requests/:id", auth, getRequest);
+router.get("/validation-request/:id", auth, getRequest);
 
 // Comment on a validation request
 router.put(
-  "/validation-requests/comment/:id",
+  "/validation-request/comment/:id",
   auth,
   authorize("Supervisor"),
   commentOnValidation
@@ -61,7 +61,7 @@ router.get(
 );
 
 // Get A document
-router.get("/documents/:id", auth, getDocument);
+router.get("/document/:id", auth, getDocument);
 
 // Comment on A Document
 router.put(
