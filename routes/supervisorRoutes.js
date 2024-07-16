@@ -75,7 +75,7 @@ router.put(
 router.get('/get-researchers/:season', auth, authorize('Supervisor'), setSeason, getResearchers);
 
 // Get A Researcher
-router.get('/get-researchers/:id', auth, getResearcher);
+router.get('/get-researcher/:id', auth, getResearcher);
 
 // Appointment CRUD
 router.post('/create-appointment', auth, authorize('Supervisor'), createAppointment);
