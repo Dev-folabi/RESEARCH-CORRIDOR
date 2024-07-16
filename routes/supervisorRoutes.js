@@ -91,6 +91,6 @@ router.get('/get-progress/:id', auth, getSingleProgress);
 // Grade CRUD Routes
 router.post('/grades', auth, authorize('Supervisor'), addGrade);
 router.get('/grades/:season', auth, authorize('Supervisor'), setSeason, getAllGrade);
-router.get('/grades/:id', auth, authorize('Supervisor'), getSingleGrade);
+router.get('/grade/:id', auth, authorize('Supervisor'), getSingleGrade);
 
 module.exports = router;
