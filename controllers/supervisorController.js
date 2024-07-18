@@ -459,8 +459,9 @@ exports.addProgressAndComments = async (req, res) => {
 // Get All Researchers' Grades
 exports.getAllGrade = async (req, res) => {
   try {
-    const grades = await Grade.find({ supervisorId: req.user._id }).populate('researcherId', 'season name matric');
-    
+    const grades = await Grade.find({ 
+      supervisorId: req.user.id }).populate('researcherId', 'season name matric');
+   
     if (grades.length === 0) {
       return res.status(404).json({ msg: "No Researchers' Grades for this Supervisor" });
     }
