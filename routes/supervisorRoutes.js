@@ -65,7 +65,7 @@ router.get("/document/:id", auth, getDocument);
 
 // Comment on A Document
 router.put(
-  "/documents/comment/:id",
+  "/document/comment/:id",
   auth,
   authorize("Supervisor"),
   commentOnDocument
