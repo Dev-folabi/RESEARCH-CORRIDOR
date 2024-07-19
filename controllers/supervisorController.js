@@ -182,7 +182,8 @@ exports.commentOnDocument = async (req, res) => {
     const document = await Document.findById(req.params.id);
     if (!document) return res.status(404).json({ msg: "No Document found" });
 
-    document.comments.push(comment);
+
+    document.comments.push({message: comment});
     document.status = "Reviewed";
     document.reviewedDate = Date.now();
     await document.save();
