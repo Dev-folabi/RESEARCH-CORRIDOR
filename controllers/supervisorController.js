@@ -427,7 +427,7 @@ exports.addProgressAndComments = async (req, res) => {
     progress.progressPercent = percentage;
 
     // Add the new comment with the current date
-    progress.comments.push({ comment: comments });
+    progress.comments.push({ comment: comment });
 
     // Save the updated progress document
     await progress.save();
