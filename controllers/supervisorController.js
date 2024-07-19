@@ -240,7 +240,7 @@ exports.getResearcher = async (req, res) => {
   try {
     const researcher = await Researcher.findById(req.params.id).populate(
       "progress",
-      "progressPercent comment"
+      "progressPercent comments"
     );
 
     if (!researcher) {
