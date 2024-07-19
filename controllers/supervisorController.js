@@ -416,7 +416,7 @@ exports.getSingleProgress = async (req, res) => {
 // Add Progress and Comments
 exports.addProgressAndComments = async (req, res) => {
   try {
-    const { progressId, percentage, comments } = req.body;
+    const { progressId, percentage, comment } = req.body;
 
     const progress = await Progress.findById(progressId).populate('researcherId', 'name matric');
     if (!progress) {
