@@ -183,9 +183,8 @@ exports.commentOnDocument = async (req, res) => {
     if (!document) return res.status(404).json({ msg: "No Document found" });
 
 
-    document.comments.push({message: comment});
+    document.comments.push({message: comment, reviewedDate: Date.now()});
     document.status = "Reviewed";
-    document.comments.push({reviewedDate: Date.now()});
     await document.save();
 
     const receiver = await Researcher.findById(document.researcherId);
