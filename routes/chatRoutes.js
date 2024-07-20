@@ -5,6 +5,6 @@ const { auth } = require('../middlewares/auth');
 
 const router = express.Router();
 
-router.get('/chats', auth, getChats);
+router.get('/:supervisorId/:season', auth, getChats);
 
 module.exports = router;
