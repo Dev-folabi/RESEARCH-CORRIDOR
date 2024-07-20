@@ -468,7 +468,7 @@ exports.getAllGrade = async (req, res) => {
     }
 
     const assignedGrades = grades.filter(grade => grade.researcherId.season.equals(req.season.id));
-
+    
     if (assignedGrades.length === 0) {
       return res.status(404).json({ msg: `No Researchers' Grades for the season ${req.season.season}` });
     }
@@ -497,12 +497,14 @@ exports.getSingleGrade = async (req, res) => {
 // Add Grade
 exports.addGrade = async (req, res) => {
   try {
-    const { gradeId, introduction, reviewLit, researchMethod, dataAnalysis, discussion, language, reference, formart, total, generalComment, evaluator } = req.body;
+    const { gradeId, introduction, reviewLit, researchMethod, dataAnalysis, discussion, language, reference, formart, generalComment, evaluator } = req.body;
 
     const grade = await Grade.findById(gradeId).populate('researcherId', 'name matric');
     if (!grade) {
       return res.status(404).json({ msg: "Grade Not Found" });
     }
+
+    let total = introduction + reviewLit + researchMethod + dataAnalysis + discussion + language + reference + formart
 
     // Update Grade data
     grade.introduction = introduction;
