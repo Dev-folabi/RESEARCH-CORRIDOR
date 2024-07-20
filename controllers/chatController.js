@@ -5,7 +5,7 @@ const Researcher = require('../models/researcherModel');
 exports.getChats = async (req, res) => {
     try {
         const { supervisorId, season } = req.body;
-        const chats = await Chat.findOne({ supervisorId, season }).populate('messages.sender', 'name');
+        const chats = await Chat.findOne({ supervisorId, season }).populate('messages.senderId', 'name');
         res.status(200).json(chats);
     } catch (err) {
         res.status(500).json({ error: err.message });

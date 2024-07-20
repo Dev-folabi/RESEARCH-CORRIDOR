@@ -12,7 +12,7 @@ const chatSchema = new mongoose.Schema({
     },
     messages: [
         {
-            sender: {
+            senderId: {
                 type: mongoose.Schema.Types.ObjectId,
                 required: true,
                 refPath: 'messages.senderModel'
