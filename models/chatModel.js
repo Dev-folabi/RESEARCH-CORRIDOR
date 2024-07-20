@@ -15,12 +15,12 @@ const chatSchema = new mongoose.Schema({
             sender: {
                 type: mongoose.Schema.Types.ObjectId,
                 required: true,
-                refPath: 'messages.senderModel' 
+                refPath: 'messages.senderModel'
             },
-            senderModel: { 
+            senderModel: {
                 type: String,
-                enum: ['Researcher', 'Supervisor'], 
-                required: true
+                required: true,
+                enum: ['Researcher', 'Supervisor']
             },
             message: {
                 type: String,

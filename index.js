@@ -26,7 +26,6 @@ app.use('/validatedocuments', express.static(path.join(__dirname, 'validateDocum
 app.use('/researchdocuments', express.static(path.join(__dirname, 'researchDocuments')));
 
 // Routes
-app.use('/', (req, res) => res.send('Welcome To Research Corridor API'))
 app.use('/api/season', require('./routes/seasonRoute'));
 app.use('/api/department', require('./routes/departmentRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));
