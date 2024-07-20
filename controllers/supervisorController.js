@@ -185,7 +185,7 @@ exports.commentOnDocument = async (req, res) => {
 
     document.comments.push({message: comment});
     document.status = "Reviewed";
-    document.reviewedDate = Date.now();
+    document.comments.push({reviewedDate: Date.now()});
     await document.save();
 
     const receiver = await Researcher.findById(document.researcherId);
