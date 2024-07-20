@@ -6,7 +6,7 @@ const ProgressSchema = new mongoose.Schema({
     progressPercent: { type: Number, default: 0 },
     comments: [ {
         comment :{ type: String },
-    date: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now }
 } ]
 });
 
