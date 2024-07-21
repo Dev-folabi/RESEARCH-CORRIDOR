@@ -481,7 +481,7 @@ exports.getAllGrade = async (req, res) => {
 // Get Single Researcher's Grade
 exports.getSingleGrade = async (req, res) => {
   try {
-    const grade = await Grade.findOne({ researcherId: req.params.id }).populate('researcherId', 'name matric');
+    const grade = await Grade.findOne({ researcherId: req.params.id }).populate('researcherId', 'name matric topic');
     
     if (!grade) {
       return res.status(404).json({ msg: "Grade Not Found" });
