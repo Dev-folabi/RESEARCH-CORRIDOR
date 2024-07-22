@@ -242,7 +242,7 @@ exports.getProgress = async (req, res) =>{
  // Get Profile
 exports.profile = async (req, res) =>{
     try{
-        const researcher = await Researcher.findById(req.user._id).select('-password')
+        const researcher = await Researcher.findById(req.user._id).populate('department').select('-password')
         res.status(200).json(researcher);
     } catch (err){
         console.error(err);  

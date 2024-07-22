@@ -37,7 +37,7 @@ const departmentId = await Department.findOne({ department })
 // Get Profile
 exports.profile = async (req, res) => {
   try {
-    const supervisor = await Supervisor.findById(req.user._id).select(
+    const supervisor = await Supervisor.findById(req.user._id).populate('department').select(
       "-password"
     );
     res.status(200).json(supervisor);
