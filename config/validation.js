@@ -58,11 +58,25 @@ const updateResearcherSchema = Joi.object({
     supervisor: Joi.string().optional()
 });
 
+const gradeSchema = Joi.object({
+    introduction : Joi.number().max(15).required(),
+    reviewLit : Joi.number().max(15).required(),
+    researchMethod : Joi.number().max(15).required(), 
+    dataAnalysis : Joi.number().max(20).required(), 
+    discussion : Joi.number().max(10).required(), 
+    language : Joi.number().max(10).required(), 
+    reference : Joi.number().max(10).required(), 
+    formart : Joi.number().max(5).required(), 
+    generalComment : Joi.string().required(), 
+    evaluator : Joi.string().required()
+});
+
 module.exports = {
     supervisorSignupSchema,
     researcherSignupSchema,
     loginSchema,
     researcherLoginSchema,
     updateSupervisorSchema,
-    updateResearcherSchema
+    updateResearcherSchema,
+    gradeSchema
 };

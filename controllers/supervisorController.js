@@ -9,6 +9,7 @@ const Grade = require("../models/gradeModel");
 const sendEmail = require("../utils/notifier");
 const { createNotification } = require("./notificationController");
 const _ = require("lodash");
+const { gradeSchema } = require("../config/validation");
 
 // Get Supervisors
 exports.getSupervisors = async (req, res) => {
@@ -496,6 +497,9 @@ exports.getSingleGrade = async (req, res) => {
 // Add Grade
 exports.addGrade = async (req, res) => {
   try {
+    const { error } = gradeSchema.validate(req.body);
+  if (error) return res.status(400).json({ msg: error.details[0].message });
+
     const { gradeId, introduction, reviewLit, researchMethod, dataAnalysis, discussion, language, reference, formart, generalComment, evaluator } = req.body;
 
     const grade = await Grade.findById(gradeId).populate('researcherId', 'name matric');
