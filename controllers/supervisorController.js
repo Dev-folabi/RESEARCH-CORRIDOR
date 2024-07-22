@@ -402,7 +402,7 @@ exports.getAllProgress = async (req, res) => {
 // Get Single Researcher's Progress and Comments
 exports.getSingleProgress = async (req, res) => {
   try {
-    const progress = await Progress.findOne({ researcherId: req.params.id }).populate('researcherId', 'name matric');
+    const progress = await Progress.findOne({ researcherId: req.params.id }).populate('researcherId', 'name matric topic gender');
     
     if (!progress) {
       return res.status(404).json({ msg: "Progress Not Found" });
