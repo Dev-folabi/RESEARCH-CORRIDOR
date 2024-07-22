@@ -59,6 +59,7 @@ const updateResearcherSchema = Joi.object({
 });
 
 const gradeSchema = Joi.object({
+    gradeId: Joi.string().required(),
     introduction : Joi.number().max(15).required(),
     reviewLit : Joi.number().max(15).required(),
     researchMethod : Joi.number().max(15).required(), 
