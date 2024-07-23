@@ -161,7 +161,7 @@ exports.getDocument = async (req, res) => {
   try {
     const document = await Document.findById(req.params.id).populate(
       "researcherId",
-      "season"
+      "season matric name"
     );
 
     if (!document) return res.status(200).json({ msg: "No Document found" });
