@@ -135,6 +135,17 @@ exports.getTopic = async (req, res) => {
     }
 };
 
+//  Delete Single uploaded Topic Validations
+exports.deleteTopic = async (req, res) => {
+    try {
+         await TopicValidation.findByIdAndDelete(req.params.id)
+
+        res.status(200).json({msg: "Validation Deleted"});
+    } catch (err) {
+        res.status(500).send('Internal Server Error');
+    }
+};
+
 // Upload Research Documents
 exports.uploadResearch = async (req, res) => {
     try {
@@ -213,6 +224,19 @@ exports.getResearch = async (req, res) => {
         res.status(500).json({ msg: 'Internal Server Error', error: err.message });
     }
 };
+
+// Delete Single uploaded Research
+exports.deleteResearch = async (req, res) => {
+    try {
+        await Document.findByIdAndDelete(req.params.id)
+
+        res.status(200).json({msg: "Research Deleted"});
+    } catch (err) {
+        console.error(err);  
+        res.status(500).json({ msg: 'Internal Server Error', error: err.message });
+    }
+};
+
 
 // Get Appointment
 exports.getAppointment = async (req, res) =>{

@@ -19,7 +19,8 @@ const {
   getSingleProgress,
   getAllGrade,
   addGrade,
-  getSingleGrade
+  getSingleGrade,
+  deleteCommentOnDocument
 } = require("../controllers/supervisorController");
 const setSeason = require("../middlewares/seasonValidate");
 const { auth, authorize } = require("../middlewares/auth");
@@ -69,6 +70,14 @@ router.put(
   auth,
   authorize("Supervisor"),
   commentOnDocument
+);
+
+// Delete A Comment on  Document
+router.delete(
+  "/document/:documentId/:commentId",
+  auth,
+  authorize("Supervisor"),
+  deleteCommentOnDocument
 );
 
 // Get All Researchers

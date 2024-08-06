@@ -211,6 +211,28 @@ exports.commentOnDocument = async (req, res) => {
   }
 };
 
+// Delete a Comment on Research Document
+exports.deleteCommentOnDocument = async (req, res) => {
+  try {
+    const { documentId, commentId } = req.params;
+
+    // Find the document and remove the comment
+    const document = await Document.findByIdAndUpdate(
+        documentId,
+        { $pull: { comments: { _id: commentId } } },
+        { new: true }
+    );
+
+    if (!document) {
+        return res.status(404).json({ error: 'Document not found' });
+    }
+
+    res.status(200).json({ message: 'Comment deleted successfully', document });
+} catch (error) {
+    res.status(500).json({ error: error.message });
+}
+};
+
 // Get All Assigned Researchers
 exports.getResearchers = async (req, res) => {
   try {
